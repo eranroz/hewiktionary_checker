@@ -60,3 +60,6 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# wikipedia dump
+pages-articles.xml.bz2
