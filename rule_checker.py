@@ -18,6 +18,7 @@ import pywikibot.textlib
 import os
 from pywikibot.xmlreader import XmlDump
 import requests
+import sys
 
 GERSHAIM_REGEX = re.compile('["״]')
 
@@ -41,8 +42,28 @@ def get_dump():
 
 
 def split_parts(page_text):
-    print('WARNING - not implemented- should break page to sub defintions')
-    return [page_text]
+    print(page_text)
+    #ascii =  "".join((c if ord(c) < 128 else '_' for c in page_text))
+    parts = re.compile("\n==[^=]+==\s*\n").split(page_text)
+    #for  part in parts:
+    #    print part
+    #    print '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+    #print('WARNING - not implemented- should break page to sub defintions')
+    for part in parts:
+
+        template_regex='{{ניתוח\s+דקדוקי\s*\|?\s*'
+        verb_template_regex='{{ניתוח\s+דקדוקי\sלפועל\s*\|?\s*'
+        p = re.compile( template_regex+'\n')
+        if p.match(part):
+            if("[[קטגוריה:ניבים, ביטויים ופתגמים]]" in part):
+                yield (part, PAGE_PART_TYPE.PHRASE)
+            else:
+                yield (part,PAGE_PART_TYPE.NOUN)
+        elif re.match(verb_template_regex,part):
+            yield (part, PAGE_PART_TYPE.VERB)
+        else:
+            yield (part, PAGE_PART_TYPE.UNKOWN)
+    #return parts
 
 
 class PAGE_PART_TYPE:
@@ -90,6 +111,8 @@ def check_part(part_text, part_type):
     return warnings
 
 
+
+
 def check_page(site, page_title, page_text):
     """
     This function checks for violations of the common structure in wiktionary.
@@ -97,6 +120,10 @@ def check_page(site, page_title, page_text):
     """
     pywikibot.output('Analyzing page %s' % page_title)
     page_parts = split_parts(page_text)
+    for p in page_parts:
+        print p
+        print '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
+    sys.exit(0)
     text_categories = [cat.title(withNamespace=False) for cat in pywikibot.textlib.getCategoryLinks(page_text, site)]
     warnings = []
     for part in page_parts:
