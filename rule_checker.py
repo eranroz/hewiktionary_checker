@@ -42,9 +42,14 @@ def get_dump():
 
 
 def split_parts(page_text):
-    print(page_text)
+    #print(page_text)
     #ascii =  "".join((c if ord(c) < 128 else '_' for c in page_text))
-    parts = re.compile("\n==[^=]+==\s*\n").split(page_text)
+
+    #for multile mode , the '^' in the begginnig of the regex will match both the start of the string and the start of a new line.
+    # the paranthess in the regex will add the delimiter 
+    # see http://stackoverflow.com/questions/2136556/in-python-how-do-i-split-a-string-and-keep-the-separators
+
+    parts = re.compile("(^==[^=]+==\s*\n)",re.MULTILINE).split(page_text)
     #for  part in parts:
     #    print part
     #    print '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
@@ -112,23 +117,40 @@ def check_part(part_text, part_type):
 
 
 
-
+n = set()
 def check_page(site, page_title, page_text):
     """
     This function checks for violations of the common structure in wiktionary.
     It report the found issues as string
     """
-    pywikibot.output('Analyzing page %s' % page_title)
-    page_parts = split_parts(page_text)
-    for p in page_parts:
-        print p
-        print '++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
-    sys.exit(0)
-    text_categories = [cat.title(withNamespace=False) for cat in pywikibot.textlib.getCategoryLinks(page_text, site)]
+    # pywikibot.output('Analyzing page %s' % page_title)
+    print 'Analyzing page '.encode('utf-8') + (page_title[::-1].encode('utf-8'))
+
     warnings = []
-    for part in page_parts:
+    page_parts = split_parts(page_text)
+    
+    def_list = list(page_parts)
+    # the first part will always be either an empty string or a string before the first definition (like {{לשכתוב}})
+    def_list.pop(0)
+    ln = len(def_list) #sum(1 for i in page_parts)
+    n.add(str(ln))
+    print ln
+    
+    if ln == 0 and not page_title.endswith('(שורש)'):
+        print 'page' + page_title +'has no defenitions'
+        warnings += ['דפים ללא כותרת']
+        # sys.exit(1)
+
+    elif ln % 2 != 0:
+         print 'page' + page_title +' is mal formed '
+         warnings += ['דפים עם בעיה']
+
+    
+    text_categories = [cat.title(withNamespace=False) for cat in pywikibot.textlib.getCategoryLinks(page_text, site)]
+
+    for part in def_list:
         part_type = PAGE_PART_TYPE.UNKOWN
-        warnings += check_part(part, part_type)
+        #TODO warnings += check_part(part, part_type)
 
     # common checks
     parsed_page_templates = pywikibot.textlib.extract_templates_and_params(page_text)
@@ -153,12 +175,14 @@ def main(*args):
     for arg in local_args:
         if gen_factory.handleArg(arg):
             continue
-        elif arg == 'get_dump':
+        elif arg == '-h':
+            print '--get-dump - harvest all articles into local compressed dump'
+        elif arg == '--get-dump':
             get_dump()  # download the latest dump if it doesnt exist
 
     site = pywikibot.Site('he', 'wiktionary')
     if os.path.exists('pages-articles.xml.bz2'):
-        print('Using dump')
+        print('parsing dump')
         all_wiktionary = XmlDump('pages-articles.xml.bz2').parse()  # open the dump and parse it.
 
         # filter only main namespace
@@ -181,19 +205,28 @@ def main(*args):
                 else:
                     pages_by_issues[issue].append(page.title())
         except pywikibot.IsRedirectPage:
+            print page.title().encode('utf-8') + "is redirect page".encode('utf-8')
             continue
         except pywikibot.NoPage:
+            print page.title().encode('utf-8') + ": NoPage exception".encode('utf-8')
             continue
 
     # after going over all pages, report it to a maintenance page so human go over it
     for issue, pages in pages_by_issues.items():
-        report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % issue)
-        report_content = '\n'.join(['* [[%s]]' % p for p in pages])
-        report_page.put(report_content)
+        
+        if issue == 'דפים ללא כותרת':
+            print 'found pages without title issue'
+            report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % issue)
+            report_content = '\n'.join(['* [[%s]]' % p for p in pages])
+            f = open('without-title.txt','w')
+            f.write(report_content.encode('utf-8'))
+            report_page.text = report_content
+            report_page.save("scanning - addnig pages without titles")
 
-    for page in gen:
-        check_page(page.title(), page.text)
 
+    
+    print '_____________________DONE____________________'
+    print n
 
 if __name__ == "__main__":
     main()
