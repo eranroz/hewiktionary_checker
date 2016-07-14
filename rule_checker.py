@@ -28,8 +28,8 @@ def get_dump():
     This function downloads teh latest wiktionary dump
     """
     # we already have a dump
-    if os.path.exists('pages-articles.xml.bz2'):
-        return
+    #if os.path.exists('pages-articles.xml.bz2'):
+    #    return
     # get a new dump
     print('Dump doesnt exist locally - downloading...')
     r = requests.get('http://dumps.wikimedia.org/hewiktionary/latest/hewiktionary-latest-pages-articles.xml.bz2',
@@ -117,34 +117,60 @@ def check_part(part_text, part_type):
 
 
 
-n = set()
+
 def check_page(site, page_title, page_text):
     """
     This function checks for violations of the common structure in wiktionary.
     It report the found issues as string
     """
     # pywikibot.output('Analyzing page %s' % page_title)
-    print 'Analyzing page '.encode('utf-8') + (page_title[::-1].encode('utf-8'))
+    #print 'Analyzing page '.encode('utf-8') + (page_title[::-1].encode('utf-8'))
 
     warnings = []
+
+    # look for any string '= x =' where x either:
+    # starts with '=' but doesn't ends with '='
+    # strats with anyhting but '=' and ends with '='
+    # has no '=' at all
+
+    #if page_title  == 'אנדוסימביוזה':
+    #    print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
+    #    print page_text
+    #    print '###################################'
+
+    if re.compile('^=([^=]+.*|=[^=]*)=\s*$',re.MULTILINE).match(page_text):
+        warnings += ['דפים עם כותרת מדרגה ראשונה']
+        print 'page with first level title' + page_title 
+
     page_parts = split_parts(page_text)
     
     def_list = list(page_parts)
     # the first part will always be either an empty string or a string before the first definition (like {{לשכתוב}})
-    def_list.pop(0)
-    ln = len(def_list) #sum(1 for i in page_parts)
-    n.add(str(ln))
-    print ln
+    first = def_list.pop(0)
+   
+    defs_num = len(def_list) #sum(1 for i in page_parts)
     
-    if ln == 0 and not page_title.endswith('(שורש)'):
-        print 'page' + page_title +'has no defenitions'
+    
+    
+    if defs_num == 0 and not page_title.endswith('(שורש)'):
+        #print 'page' + page_title +'has no defenitions'
         warnings += ['דפים ללא כותרת']
         # sys.exit(1)
 
-    elif ln % 2 != 0:
+    elif defs_num % 2 != 0:
          print 'page' + page_title +' is mal formed '
          warnings += ['דפים עם בעיה']
+    
+        #template_regex='{{ניתוח\s+דקדוקי\s*\|?\s*'
+        #verb_template_regex='{{ניתוח\s+דקדוקי\sלפועל\s*\|?\s*'
+        #p = re.compile( template_regex+'\n')
+        #if p.match(part):
 
+    elif re.compile("<!--יש למחוק את המיותר בסוף מילוי התבנית, כמו את שורה זו למשל-->").match(first[0]):
+        warnings += ['דפים בהם לא נמחקה ההערה הדיפולטיבית']
+
+    elif first[0] != u'' and not re.compile("^\n*\{?").match(first[0]) and not page_title.endswith('(שורש)'):
+        warnings += [ 'דפים עם טקסט לפני ההערה הראשונה']
     
     text_categories = [cat.title(withNamespace=False) for cat in pywikibot.textlib.getCategoryLinks(page_text, site)]
 
@@ -184,7 +210,8 @@ def main(*args):
     if os.path.exists('pages-articles.xml.bz2'):
         print('parsing dump')
         all_wiktionary = XmlDump('pages-articles.xml.bz2').parse()  # open the dump and parse it.
-
+        print('end parsing dump')
+        
         # filter only main namespace
         all_wiktionary = filter(lambda page: page.ns == '0' and not page.isredirect, all_wiktionary)
         gen = (pywikibot.Page(site, p.title) for p in all_wiktionary if check_page(site, p.title, p.text))
@@ -199,11 +226,14 @@ def main(*args):
     for page in gen:
         try:
             issues = check_page(site, page.title(), page.get())
+            #print page.title()
+            #if page.title() == 'אנדוסימביוזה':
+            #    exit(1)
             for issue in issues:
                 if issue not in pages_by_issues:
                     pages_by_issues[issue] = []
-                else:
-                    pages_by_issues[issue].append(page.title())
+                pages_by_issues[issue].append(page.title())
+
         except pywikibot.IsRedirectPage:
             print page.title().encode('utf-8') + "is redirect page".encode('utf-8')
             continue
@@ -214,19 +244,19 @@ def main(*args):
     # after going over all pages, report it to a maintenance page so human go over it
     for issue, pages in pages_by_issues.items():
         
-        if issue == 'דפים ללא כותרת':
+        if issue == 'דפים ללא כותרת' or issue == 'דפים בהם לא נמחקה ההערה הדיפולטיבית' or issue == 'דפים עם כותרת מדרגה ראשונה':
             print 'found pages without title issue'
             report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % issue)
             report_content = '\n'.join(['* [[%s]]' % p for p in pages])
             f = open('without-title.txt','w')
             f.write(report_content.encode('utf-8'))
             report_page.text = report_content
-            report_page.save("scanning - addnig pages without titles")
+            report_page.save("סריקה עם בוט ")
 
 
     
     print '_____________________DONE____________________'
-    print n
+    
 
 if __name__ == "__main__":
     main()
