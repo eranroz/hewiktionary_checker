@@ -8,6 +8,10 @@ Use get_dump to get the full dump (for developing we are analyzing the full dump
 &params;
 
 Please type "rule_checker.py -help | more" if you can't read the top of the help.
+
+you  can run with 
+python rule_checker.py -simulate -log:logrule.log -limit:5
+
 """
 
 from __future__ import unicode_literals
@@ -23,7 +27,7 @@ import sys
 
 
 GERSHAIM_REGEX = re.compile('["״]')
-
+KATEGORIA_PITGAMI_REGEX = re.compile(u'\\[\\[\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4:.*(\u05e0\u05d9\u05d1\u05d9\u05dd|\u05d1\u05d9\u05d8\u05d5\u05d9\u05d9\u05dd|\u05e4\u05ea\u05d2\u05de\u05d9\u05dd).*\\]\\]')
 GIZRON = "גיזרון"
 MAKOR = "מקור"
 PARSHANIM = "פרשנים מפרשים"
@@ -65,7 +69,8 @@ WARNING_PAGE_WITH_TEXT_BEFORE_DEF = 'דפים עם טקסט לפני ההערה 
 WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM = 'דפים עם גרשיים שאינם ראשי תיבות'
 WARNING_PAGE_ACRONYM_NO_GERSHAIM = 'דפים עם ראשי תיבות חסרי גרשיים'
 WARNING_PAGE_WITHOUT_GREMMER_BOX = 'דפים חסרי ניתוח דקדוקי'
-
+WARNING_PAGE_WITH_FIRST_LEVEL_TITLE =  'דפים עם כותרת מדרגה ראשונה'
+WARNINGS_PAGE_WITHOUT_TITLE = 'דפים ללא כותרת'
 
 #ordered_secondary_titles = {
 #"גיזרון/מקור",
@@ -100,41 +105,71 @@ def get_dump():
     print('New dump downloaded successfully')
 
 
-def split_parts(page_text):
-    #print(page_text)
-    #ascii =  "".join((c if ord(c) < 128 else '_' for c in page_text))
 
-    #for multile mode , the '^' in the begginnig of the regex will match both the start of the string and the start of a new line.
+def split_parts(page_text):
+
+    '''
+    sparates the page text to parts according to second level title and also seperates each title to 
+    from it's part.
+    For example:
+   
+    "
+    blabla
+    == A1 ==
+    text for defining A1
+
+    == A2 ==
+    text for defining A2
+    "
+    will create the generator: [('blabla','',unknown),
+                               ('== A1 ==','text for defining A1',<type>)
+                               ('== A2 ==','text for defining A2',<type>)]
+    '''
+    #for multile mode , the '^, $' will match both 
+    #the start/end of the string and the start/end of a line.
+
     # the paranthess in the regex will add the delimiter 
     # see http://stackoverflow.com/questions/2136556/in-python-how-do-i-split-a-string-and-keep-the-separators
 
-    parts = re.compile("(^==[^=]+==\s*\n)",re.MULTILINE).split(page_text)
-    #for  part in parts:
-    #    print part
-    #    print '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
-    #print('WARNING - not implemented- should break page to sub defintions')
-    for part in parts:
+    #matches the level2 title, e.g '== ילד =='
+    parts = re.compile("(^==[^=]+==\s*$)",re.MULTILINE).split(page_text)
 
-        template_regex='{{ניתוח\s+דקדוקי\s*\|?\s*'
-        verb_template_regex='{{ניתוח\s+דקדוקי\sלפועל\s*\|?\s*'
-        p = re.compile( template_regex+'\n')
-        if p.match(part):
-            if("[[קטגוריה:ניבים, ביטויים ופתגמים]]" in part):
-                yield (part, PAGE_PART_TYPE.PHRASE)
-            else:
-                yield (part,PAGE_PART_TYPE.NOUN)
-        elif re.match(verb_template_regex,part):
-            yield (part, PAGE_PART_TYPE.VERB)
+    yield (parts.pop(0),'',PAGE_PART_TYPE.UNKNOWN)
+
+
+    template_regex='\n*{{ניתוח\s+דקדוקי\s*\|?\s*'
+    verb_template_regex='\n*{{ניתוח\s+דקדוקי\sלפועל\s*\|?\s*'
+    p = re.compile( template_regex+'\n')
+
+    for i in range(0,len(parts),2):
+        
+        title = parts[i]
+        part = parts[i+1]
+
+        if KATEGORIA_PITGAMI_REGEX.search(part) or part.endswith("'"):
+            yield (title,part,PAGE_PART_TYPE.PHRASE)
+        elif p.match(part):
+            yield (title,part,PAGE_PART_TYPE.NOUN)
+        elif re.search(verb_template_regex,part):
+            yield (title,part,PAGE_PART_TYPE.VERB)
+        elif re.search(GERSHAIM_REGEX,title):
+            yield (title,part,PAGE_PART_TYPE.RASHEY_TEVOT)
+        elif re.search('[a-zA-Z]',title):
+            yield (title,part,PAGE_PART_TYPE.NON_HEBREW)
         else:
-            yield (part, PAGE_PART_TYPE.UNKOWN)
-    #return parts
-
+            print part
+            print [title]
+            print title
+            yield (title,part,PAGE_PART_TYPE.UNKNOWN)
 
 class PAGE_PART_TYPE:
     NOUN = 1
     VERB = 2
     PHRASE = 3
-    UNKOWN = 4
+    UNKNOWN = 4
+    RASHEY_TEVOT = 5
+    NON_HEBREW = 6
+    
 
 
 def check_noun(page_text):
@@ -172,23 +207,16 @@ def check_part(part_text, part_type):
     last_match = ''
     for f in fields:
         if tit == 1:
-            #print '-------- FIELD! -------------'
-            #print f
-            #print '-----MATCH!----------'
             match =  re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1)
             match = match.strip()
-            #print match
-            
+
             if not titles_to_order.has_key(match):
-                #print 'ERRRORR!!!!!!!!! - field is not valid ' + match
                 if WARNING_PAGE_WITH_INVALID_FIELD not in warnings:
                     warnings[WARNING_PAGE_WITH_INVALID_FIELD] = []
                 warnings[WARNING_PAGE_WITH_INVALID_FIELD] += ['סעיף שאינו מהרשימה: %s' % match]
             else:
                 new_state = titles_to_order[match]
                 if new_state < state:
-                    #print 'ERRRRRRRRRROR!!!!! the fields are in bad order found match '+match+' last match is '+last_match
-                    #print 'ERRRRRRRRRROR!!!!! curent state is '+str(state)+' new state is '+str(new_state)
                     if WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER not in warnings:
                         warnings[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = []
                     warnings[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] += ['סעיף %s צריך להיות לפני סעיף %s' % (match,last_match) ]
@@ -229,111 +257,87 @@ def check_page(site, page_title, page_text):
 
     # warnings is a  dictionary, each key in the dictionary is a string describing the warning.
     # The list of warnings is in the head of this file , they all start with WARNING_
-    # the value of each key is a list of strings , each string is a detailed description of what is wrong
-    # in case there is no need for detailed description and it is enough to put link to the page, the list will be empty
+    # the value of each enty is a list of strings , each string is a detailed description of what is wrong
+    # if there is no need for detailed description and it is enough to put link to the page, the list will be empty
     warnings = {}
+
+    if page_title.endswith('(שורש)'):
+        return warnings
 
     # look for any string '= x =' where x either:
     # starts with '=' but doesn't ends with '='
     # strats with anyhting but '=' and ends with '='
     # has no '=' at all
-
-    #if page_title  == 'אנדוסימביוזה':
-
-    #print page_title
-    #print '###################################'
-
     if re.compile('^=([^=]+.*|=[^=]*)=\s*$',re.MULTILINE).match(page_text):
-        warnings['דפים עם כותרת מדרגה ראשונה'] = []
+        warnings[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = []
         print 'page with first level title' + page_title 
 
-    page_parts = split_parts(page_text)
     
-    def_list = list(page_parts)
+    parts_gen = split_parts(page_text)
+
     # the first part will always be either an empty string or a string before the first definition (like {{לשכתוב}})
-    first = def_list.pop(0)
-   
-    defs_num = len(def_list) #sum(1 for i in page_parts)
+    first = parts_gen.next()
+
+    if re.compile("<!--יש למחוק את המיותר בסוף מילוי התבנית, כמו את שורה זו למשל-->").match(first[0]):
+        warnings[WARNING_PAGE_WITH_COMMENT] = []
+
+    elif first[0] != u'' and not re.compile("^\n*\{?").match(first[0]):
+        warnings[WARNING_PAGE_WITH_TEXT_BEFORE_DEF] = []
     
-    
-    
-    if defs_num == 0 and not page_title.endswith('(שורש)'):
+    defs_num = 0
+
+    for part in parts_gen:
+        if part[2] ==  PAGE_PART_TYPE.UNKNOWN:
+            warnings[WARNING_PAGE_WITHOUT_GREMMER_BOX] = []
+        w = check_part(part[1], part[2])
+        for key in w:
+            if key in warnings:
+                warnings[key] += w[key]
+            else:
+                warnings[key] = w[key]
+        defs_num = defs_num + 1
+
+    if defs_num == 0:
         #print 'page' + page_title +'has no defenitions'
-        warnings['דפים ללא כותרת'] = []
-        # sys.exit(1)
-
-    elif defs_num % 2 != 0:
-         print 'page' + page_title +' is mal formed '
-         warnings += ['דפים עם בעיה']
-    
-        #template_regex='{{ניתוח\s+דקדוקי\s*\|?\s*'
-        #verb_template_regex='{{ניתוח\s+דקדוקי\sלפועל\s*\|?\s*'
-        #p = re.compile( template_regex+'\n')
-        #if p.match(part):
-
-    elif re.compile("<!--יש למחוק את המיותר בסוף מילוי התבנית, כמו את שורה זו למשל-->").match(first[0]):
-        warnings['דפים בהם לא נמחקה ההערה הדיפולטיבית'] = []
-
-    elif first[0] != u'' and not re.compile("^\n*\{?").match(first[0]) and not page_title.endswith('(שורש)'):
-        warnings['דפים עם טקסט לפני ההערה הראשונה'] = []
-    
+        warnings[WARNINGS_PAGE_WITHOUT_TITLE] = []
+        
     text_categories = [cat.title(withNamespace=False) for cat in pywikibot.textlib.getCategoryLinks(page_text, site)]
 
-        
-    if not page_title.endswith('(שורש)'):
-        tit = 1
-        for part in def_list:
-            if tit == 0:
-                part_type = PAGE_PART_TYPE.UNKOWN
-                #if verbose:
-                #print '^^^^^^^^^^^^ calling check part for ' + page_title
-                w = check_part(part[0], part[1])
-                for key in w:
-                    if key in warnings:
-                        warnings[key] += w[key]
-                    else:
-                        warnings[key] = w[key]
-
-            tit = 1 - tit
-    #if warnings:
-    #    print 'PRINT 1'
-    #    print warnings
-    # common checks
-    parsed_page_templates = pywikibot.textlib.extract_templates_and_params(page_text)
-    nituch_dikduki = [template_params for template_name, template_params in parsed_page_templates
-                      if template_name == 'ניתוח דקדוקי']
-    has_nituch_dikduki = len(nituch_dikduki) > 0
-
     if GERSHAIM_REGEX.findall(page_title) and ('ראשי תיבות' not in text_categories):
-        warnings['דפים עם גרשיים שאינם ראשי תיבות'] = []  # FIX: warning for gershaim which aren't in category
+        warnings[WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM] = []  # FIX: warning for gershaim which aren't in category
     elif not GERSHAIM_REGEX.findall(page_title) and ('ראשי תיבות' in text_categories):
-        warnings['דפים עם ראשי תיבות חסרי גרשיים']  = []# FIX: warning for rashi taivut without gershaim
-    elif not has_nituch_dikduki:
-        warnings['דפים חסרי ניתוח דקדוקי'] = [] # FIX: warning of missing nituh dikduki
-
-    #if warnings:
-    #    print 'PRINT 2'
-        #print warnings
+        warnings[WARNING_PAGE_ACRONYM_NO_GERSHAIM]  = []# FIX: warning for rashi taivut without gershaim
 
     return warnings
 
 
-def main(*args):
-    local_args = pywikibot.handle_args(args)
-    gen_factory = pagegenerators.GeneratorFactory()
+def main(args):
     
-    for arg in local_args:
-        if gen_factory.handleArg(arg):
-            continue
-        elif arg == '-h':
-            print '--get-dump - harvest all articles into local compressed dump'
-        elif arg == '--get-dump':
-            get_dump()  # download the latest dump if it doesnt exist
-        #elif arg == '-v':
-        #    verbose = 1
-
     site = pywikibot.Site('he', 'wiktionary')
-    if os.path.exists('pages-articles.xml.bz2'):
+
+    print args
+    global_args  = []
+
+    limit = -1
+    article = ''
+    for arg in args:
+        m = re.compile('^-limit:([0-9]+)$').match(arg)
+        a = re.compile('^-article:(.+)$').match(arg)
+        if arg == '--get-dump':
+            get_dump()  # download the latest dump if it doesnt exist
+        elif m:
+            limit = int(m.group(1))
+        elif a:
+            article = a.group(1)
+        else:
+            global_args.append(arg)
+
+    local_args = pywikibot.handle_args(global_args)
+        
+    if article != '':
+        gen = (pywikibot.Page(site, article.decode('utf-8')) for i in range(0,1))
+        gen = pagegenerators.PreloadingGenerator(gen)
+    elif os.path.exists('pages-articles.xml.bz2'):
         print('parsing dump')
         all_wiktionary = XmlDump('pages-articles.xml.bz2').parse()  # open the dump and parse it.
         print('end parsing dump')
@@ -341,27 +345,25 @@ def main(*args):
         # filter only main namespace
         all_wiktionary = filter(lambda page: page.ns == '0' and not page.isredirect, all_wiktionary)
         gen = (pywikibot.Page(site, p.title) for p in all_wiktionary if check_page(site, p.title, p.text))
+        gen = pagegenerators.PreloadingGenerator(gen)
     else:
+        #TODO - make sure this case works
         print('Not using dump - use get_dump to download dump file or run with comment lise arguments')
-        gen = gen_factory.getCombinedGenerator()
+        #gen_factory = pagegenerators.GeneratorFactory(site,'-ns:1')
+        #gen_factory.getCombinedGenerator()
+        gen =  pagegenerators.AllpagesPageGenerator(site = site)
 
-    gen = pagegenerators.PreloadingGenerator(gen)
-    
     print '#@#@#@#@#@#@##@#@#@#@#@#@#@#@#@##@#@#@#@#@#@#@#@#@##@#@#@#@#@#@#@#@#@##@#@#@'
 
     # a dictionary where the key is the issue and the value is list of pages violates it
     pages_by_issues = dict()
     for page in gen:
-        #print '#@#@#@#@#@# ' + page.title() + ' #@#@#@##@#@#@#@#'
+        if limit == 0:
+            break
+        elif limit > 0:
+            limit = limit -1
         try:
             issues = check_page(site, page.title(), page.get())
-            #if issues:
-                #print '@@@@@@@@@@@@ ISSUES for '+page.title()
-                #print issues
-            #else:
-            #    print 'OK'
-            #if page.title() == 'אנדוסימביוזה':
-            #    exit(1)
             for issue in issues:
                 if issue not in pages_by_issues:
                     pages_by_issues[issue] = []
@@ -379,38 +381,27 @@ def main(*args):
         except pywikibot.NoPage:
             print page.title().encode('utf-8') + ": NoPage exception".encode('utf-8')
             continue
-        #if page.title() == 'אנדוסימביוזה':
-        #    break
-        #if page.title() == 'תינוק':
-        #    break
-        #if page.title() == 'דב':
-        #    break
- 
     # after going over all pages, report it to a maintenance page so human go over it
     for issue, pages in pages_by_issues.items():
-        
-#WARNING_PAGE_WITH_INVALID_FIELD = 'דפים עם סעיפים שאינם מהרשימה הסגורה'
-#WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER = 'דפים עם סעיפים שאינם בסדר הנכון'
-
-#        if issue == 'דפים ללא כותרת' or issue == 'דפים בהם לא נמחקה ההערה הדיפולטיבית' or issue == 'דפים עם כותרת מדרגה ראשונה' or issue:
-         print 'found issue %s' % issue
-         report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % issue)
+        print 'found issue %s' % issue
+        report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % issue)
          
-         report_content = 'סך הכל %s ערכים\n' % str(len(pages))
-         #report_content +=  '\n'.join(['* [[%s]]' % p for p in pages])
-         report_content +=  '\n'.join(['%s' % p for p in pages])
+        report_content = 'סך הכל %s ערכים\n' % str(len(pages))
+        #report_content +=  '\n'.join(['* [[%s]]' % p for p in pages])
+        report_content +=  '\n'.join(['%s' % p for p in pages])
 
-         f = open('without-title.txt','w')
-         f.write(report_content.encode('utf-8'))
-         #print report_content
+        f = open('%s.txt' % issue ,'w')
+        f.write(report_content.encode('utf-8'))
+        #print report_content
                     
-         report_page.text = report_content
-         report_page.save("סריקה עם בוט ")
+        report_page.text = report_content
+        report_page.save("סריקה עם בוט ")
 
 
     
     print '_____________________DONE____________________'
     
 
+print 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
