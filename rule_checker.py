@@ -157,9 +157,6 @@ def split_parts(page_text):
         elif re.search('[a-zA-Z]',title):
             yield (title,part,PAGE_PART_TYPE.NON_HEBREW)
         else:
-            print part
-            print [title]
-            print title
             yield (title,part,PAGE_PART_TYPE.UNKNOWN)
 
 class PAGE_PART_TYPE:
@@ -387,9 +384,9 @@ def main(args):
         report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % issue)
          
         report_content = 'סך הכל %s ערכים\n' % str(len(pages))
-        #report_content +=  '\n'.join(['* [[%s]]' % p for p in pages])
+        pages = sorted(pages)
         report_content +=  '\n'.join(['%s' % p for p in pages])
-
+        report_content += "\n\n[[קטגוריה: ויקימילון - תחזוקה]]"
         f = open('%s.txt' % issue ,'w')
         f.write(report_content.encode('utf-8'))
         #print report_content
