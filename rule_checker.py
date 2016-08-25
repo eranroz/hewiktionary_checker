@@ -15,6 +15,7 @@ python rule_checker.py -simulate -log:logrule.log -limit:5
 """
 
 from __future__ import unicode_literals
+from __future__ import division
 import pywikibot
 from pywikibot import pagegenerators
 import re
@@ -62,6 +63,9 @@ titles_to_order = {
     SHULAIM : 11,
 }
 
+titles_list  = list(titles_to_order.keys())
+
+
 WARNING_PAGE_WITH_INVALID_FIELD = 'דפים עם סעיפים שאינם מהרשימה הסגורה'
 WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER = 'דפים עם סעיפים שאינם בסדר הנכון'
 WARNING_PAGE_WITH_COMMENT = 'דפים בהם לא נמחקה ההערה הדיפולטיבית'
@@ -71,6 +75,10 @@ WARNING_PAGE_ACRONYM_NO_GERSHAIM = 'דפים עם ראשי תיבות חסרי �
 WARNING_PAGE_WITHOUT_GREMMER_BOX = 'דפים חסרי ניתוח דקדוקי'
 WARNING_PAGE_WITH_FIRST_LEVEL_TITLE =  'דפים עם כותרת מדרגה ראשונה'
 WARNINGS_PAGE_WITHOUT_TITLE = 'דפים ללא כותרת'
+WARNING_2nd_LEVEL_TITLE_FROM_LIST = 'דפים עם כותרת סעיף מסדר 2'
+WARNING_TITLE_WITH_HTML_TAGS = 'דפים עם תגיות היפר-טקסט בכותרת'
+WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE = 'דפים בהם כותרת מסדר 2 ללא ניקוד שונה משם הדף'
+WARNING_NO_NIKUD_IN_SEC_TITLE  = 'דפים עם כותרת משנה לא מנוקדת'
 
 #ordered_secondary_titles = {
 #"גיזרון/מקור",
@@ -194,13 +202,49 @@ def common_checks(part_type):
 
 
 
-def check_part(part_text, part_type):
+def check_part(page_title,part_title,part_text, part_type):
     #print '=========start check_part ==========='
 
+    #print part_title
+
+    warnings = {}
+    title = re.compile("^==\s*([^=]+)\s*==\s*\n*").search(part_title).group(1).strip()
+    if title in titles_list:
+        #print title+" in list"
+        warnings[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = ['סעיף עם כתורת מסדר 2: %s' % title]
+    elif '<' in title:
+        warnings[WARNING_TITLE_WITH_HTML_TAGS] = ['%s' % title]
+    else:
+        
+        real_title = re.compile('([^\{\}\)\(]*)(\{\{.*\}\})?(\(.*\))?').search(title).group(1).strip()
+#        print 'real title:'
+#        print real_title
+        no_nikud_title = re.sub('[\u0591-\u05c7\u200f]','',real_title)
+        no_nikud_title = re.sub('[״]','"',no_nikud_title)
+        if no_nikud_title != page_title:
+            print 'DIFFERENT'
+            print [page_title]
+            print [no_nikud_title]
+            if WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE not in warnings:
+                warnings[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = []
+            warnings[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] += ['כותרת משנה ללא ניקוד: %s' % no_nikud_title ]
+        
+        else:
+            words_in_title =  re.compile('[\s]+').split(title)
+            for word in words_in_title:
+                nikud_num  = len(re.findall(u'[\u05b0-\u05bc]',word))
+                he_num = len(re.findall(u'[\u0591-\u05f4]',word))
+                other_num = len(re.findall(u'[\'|}{)("״]',word))
+
+                if len(word)> 2 and  other_num == 0 and  he_num > 0 and nikud_num == 0:
+                    if WARNING_NO_NIKUD_IN_SEC_TITLE not in warnings:
+                        warnings[WARNING_NO_NIKUD_IN_SEC_TITLE] = []
+                    warnings[WARNING_NO_NIKUD_IN_SEC_TITLE] += ['כותרת: %s' % title ]
+        
     fields = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).split(part_text)
     state = -1
     tit = 0
-    warnings = {}
+
     last_match = ''
     for f in fields:
         if tit == 1:
@@ -286,7 +330,7 @@ def check_page(site, page_title, page_text):
     for part in parts_gen:
         if part[2] ==  PAGE_PART_TYPE.UNKNOWN:
             warnings[WARNING_PAGE_WITHOUT_GREMMER_BOX] = []
-        w = check_part(part[1], part[2])
+        w = check_part(page_title,part[0],part[1], part[2])
         for key in w:
             if key in warnings:
                 warnings[key] += w[key]
@@ -331,7 +375,7 @@ def main(args):
 
     local_args = pywikibot.handle_args(global_args)
         
-    if article != '':
+    if article != u'':
         gen = (pywikibot.Page(site, article.decode('utf-8')) for i in range(0,1))
         gen = pagegenerators.PreloadingGenerator(gen)
     elif os.path.exists('pages-articles.xml.bz2'):
