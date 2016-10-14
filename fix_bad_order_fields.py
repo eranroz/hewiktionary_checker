@@ -92,6 +92,18 @@ def cmp_to_key(mycmp):
     
 
 def fix_part2(part_text):
+    
+    original = part_text
+    if re.compile('[^\n]===[^=\n\r\v\f]+===',re.MULTILINE).search(part_text):
+        print('ERROR: a 3rd level title that do not start with new line')
+        print(re.compile('[^\n]===[^=\n]+===',re.MULTILINE).findall(part_text))
+        return original
+
+    if re.compile('\n===[^=\n\r\v\f]+===[ \t]*[^\n]',re.MULTILINE).search(part_text):
+        print('ERROR: a 3rd level title that do not end')
+        return original
+
+
 
     categories = re.findall("\[\[קטגוריה:[^\]]+\]\]",part_text,re.MULTILINE)
     #print 'categories:'
@@ -102,18 +114,22 @@ def fix_part2(part_text):
 
     fields_from_known_list_to_sort = []
     fields_not_from_known_list  = {}
-    fields = re.compile("(\n===[^=]+===\s*\n)",re.MULTILINE).split(part_text)
-
-
-    #print fields
+    fields = re.compile("(===[^=\n\r\v\f]+===\s*\n)",re.MULTILINE).split(part_text)
+    #print(part_text)
+    #print('================== FIELDS =================')
+    #for f in fields:
+    #    print('#'+f+'#')
+    #    print('-----------\n')
 
     if len(fields) < 2:
-        return None
+        print('PROBLEM 1: seems like the are no sections in this part: num of parts: '+str(len(fields)))
+        return original 
 
     if fields[0].startswith('='):
+        print('PROBLEM 2: '+fields[0])
         return None
  
-    print('================== PART BEFORE FIX =================')
+   # print('================== PART BEFORE FIX =================')
     #print part_text
     
     tit = 1
@@ -122,7 +138,7 @@ def fix_part2(part_text):
     while i < len(fields)-1:
         # tit is one for the section title
         if tit == 1: 
-            section_title =  re.compile("\n===\s*([^=]+)\s*===\s*\n").search(fields[i]).group(1)
+            section_title =  re.compile("===\s*([^=]+)\s*===\s*\n").search(fields[i]).group(1)
             section_title = section_title.strip()
 
             if section_title in titles_to_order:
@@ -132,21 +148,23 @@ def fix_part2(part_text):
             j += 1
         tit = 1 - tit
         i += 1
-    
+
+
+
     fields_from_known_list_to_sort.sort(key=cmp_to_key(cmp))# It modifies the list in-place (and returns None to avoid confusion)
     
     final = [None] * (len(fields)-1)
-
+    
     for key in list(fields_not_from_known_list.keys()):
         f = fields_not_from_known_list[key] 
         final[2*key] = f[0]
         final[2*key+1] = f[1]
 
+    print('==========FROM KNOWN============')
     i = 0
     #print(final)
     for f in fields_from_known_list_to_sort:
-        #print f
-        while final[i]:
+        while final[i] != None:
             i += 1;
         final[i] = f[0]
         final[i+1] = f[1]
@@ -159,9 +177,8 @@ def fix_part2(part_text):
         final += '\n'
     for cat in categories:
         #print '#'+cat+'#'
-        final += cat
-    print('================== PART AFTER FIX =====================')
-    #print final
+        final += cat+'\n'
+    
     return final
     
     
@@ -190,7 +207,7 @@ def fix_page(page_title, page_text):
     tit = 1
     
     for part in def_list:
-        print('=== PART ===')
+        
         #print part
         if tit == 0: #tit 0 : definition
             #if verbose:
@@ -201,6 +218,7 @@ def fix_page(page_title, page_text):
     
             final += [p]
         else:
+            print('=== PART ==='+part)
             if not part.startswith('\n') and not final[-1].endswith('\n') and not len(final) == 1:
                 final += ['\n'+part]
             else:
@@ -235,14 +253,13 @@ def main(args):
     #sys.exit(1)
 
     if article != '':
-        page = pywikibot.Page(site, article.decode('utf-8'))
+        page = pywikibot.Page(site, article)
         t= page.text
         page.text = fix_page(page.title(),page.text)
 
         if page.text:
             if (t == page.text):
                 print('ARE EQUAL!')
-                print(t)
             page.save("בוט שמסדר סעיפים מדרגה 3 בסדר הנכון")
 
     else:
@@ -258,6 +275,8 @@ def main(args):
             page.text = fix_page(page.title(),page.text)
             if page.text:
                 page.save("בוט שמסדר סעיפים מדרגה 3 בסדר הנכון")
+            else:
+                print('problem with page - skipping')
             l += 1
             
     
