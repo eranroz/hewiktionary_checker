@@ -92,11 +92,7 @@ def main(args):
     report_content = 'סך הכל %s ערכים\n' % str(len(bot._pages))
     pages = sorted(bot._pages)
     report_content +=  '\n'.join(['%s' % p for p in bot._pages])
-    report_content += "\n\n[[קטגוריה: ויקימילון - תחזוקה]]"
-
-
-
-                    
+    report_content += "\n\n[[קטגוריה: ויקימילון - תחזוקה]]"                    
     report_page.text = report_content
     report_page.save(__file__+" סריקה עם בוט")
     print('_____________________DONE____________________')

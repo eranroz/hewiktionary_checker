@@ -28,8 +28,8 @@ def split_parts(page_text):
     parts = re.compile("(^==[^=]+==\s*\n)",re.MULTILINE).split(page_text)
     return parts
 
-#    for part in parts:
-#        yield part
+
+
     
     
 class KtzarmarBot(pywikibot.CurrentPageBot):
@@ -44,12 +44,9 @@ class KtzarmarBot(pywikibot.CurrentPageBot):
 
         
         hagdarot = sections.pop(0)
-        print("===== HAGDAROT ========")
-        print(hagdarot)
-        #print("-----------------------------------------------------")
         hagdara = re.compile("^#[^:]",re.MULTILINE).search(hagdarot)
+        
         if not hagdara:
-            print(page_title+": hagdara not exist")
             self._pages_without_def.append('* [[%s]]' % page_title)
             return True
 
@@ -57,15 +54,13 @@ class KtzarmarBot(pywikibot.CurrentPageBot):
         sec_num = 0
         for section in sections:
             if is_sec_title and not re.compile(REOGAM).search(section):
-                #print("===== SECTION TITLE ========")
-                #print('section: '+section) # 1 is title
                 sec_num = sec_num + 1
             if(sec_num >= 2):
                return False
             is_sec_title = 1 - is_sec_title
 
         self._ktzarmarim.append('* [[%s]]' % page_title)
-        return True #TODO - this should be true
+        return True 
                 
             
             
@@ -82,7 +77,6 @@ class KtzarmarBot(pywikibot.CurrentPageBot):
         
         s = re.compile(u'.*{{קצרמר}}.*',re.MULTILINE).search(self.current_page.text)
         if s is not None:
-            #print(self.current_page.title()+" already ktzarmar")
             return
            
         def_list = split_parts(self.current_page.text)
@@ -106,9 +100,7 @@ class KtzarmarBot(pywikibot.CurrentPageBot):
         for part in def_list:
             if tit == 0:
                 if self.check_ktzarmar(part,self.current_page.title()):
-                    #print('page ' + self.current_page.title()+' IS A NEW KTZARMAR!')
                     #new_text = self.current_page.text + "\n{{קצרמר}}"
-                    
                     #self.put_current(new_text, summary = u'בוט זיהוי קצרמרים')
                     return
             tit = 1 - tit

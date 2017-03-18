@@ -103,11 +103,7 @@ def fix_part2(part_text):
         print('ERROR: a 3rd level title that do not end')
         return original
 
-
-
     categories = re.findall("\[\[קטגוריה:[^\]]+\]\]",part_text,re.MULTILINE)
-    #print 'categories:'
-    #print categories
 
     part_text = re.sub("\[\[קטגוריה:[^\]]+\]\]",'',part_text)
     part_text = re.sub("\n{3,}",'\n\n',part_text)
@@ -115,11 +111,6 @@ def fix_part2(part_text):
     fields_from_known_list_to_sort = []
     fields_not_from_known_list  = {}
     fields = re.compile("(===[^=\n\r\v\f]+===\s*\n)",re.MULTILINE).split(part_text)
-    #print(part_text)
-    #print('================== FIELDS =================')
-    #for f in fields:
-    #    print('#'+f+'#')
-    #    print('-----------\n')
 
     if len(fields) < 2:
         print('PROBLEM 1: seems like the are no sections in this part: num of parts: '+str(len(fields)))
@@ -148,9 +139,7 @@ def fix_part2(part_text):
             j += 1
         tit = 1 - tit
         i += 1
-
-
-
+        
     fields_from_known_list_to_sort.sort(key=cmp_to_key(cmp))# It modifies the list in-place (and returns None to avoid confusion)
     
     final = [None] * (len(fields)-1)
@@ -160,9 +149,7 @@ def fix_part2(part_text):
         final[2*key] = f[0]
         final[2*key+1] = f[1]
 
-    print('==========FROM KNOWN============')
     i = 0
-    #print(final)
     for f in fields_from_known_list_to_sort:
         while final[i] != None:
             i += 1;
@@ -176,7 +163,6 @@ def fix_part2(part_text):
         print('add newline to final')
         final += '\n'
     for cat in categories:
-        #print '#'+cat+'#'
         final += cat+'\n'
     
     return final

@@ -59,17 +59,17 @@ class SectionTitleReplacerBot(pywikibot.CurrentPageBot):
     def treat_page(self):
         """Load the given page, do some changes, and save it."""
 
-        print self.current_page.title
+        print(self.current_page.title())
         old_page_text = self.current_page.text
         new_page_text = old_page_text
 
-        page_title = self.current_page.title
+        page_title = self.current_page.title()
 
-        for key, value in titles_replacer.iteritems():
+        for key, value in titles_replacer.items():
             new_page_text = re.sub("===\s*%s\s*===" % (key), "=== %s ===" % (value), new_page_text, re.MULTILINE )
     
         if(new_page_text != old_page_text):
-            print 'CHANGED'
+            print('CHANGED')
             self.put_current(new_page_text, summary = u'בוט המחליף כותרות סעיפים')
 
 def main(args):
@@ -84,13 +84,13 @@ def main(args):
 
     for arg in args:
 
-        print arg
+        print(arg)
         m = re.compile('^-limit:([0-9]+)$').match(arg)
         a = re.compile('^-article:(.+)$').match(arg)
         if m:
             limit = int(m.group(1))
         elif a:
-            print 'a'
+            print('a')
             article = a.group(1)
         else:
             global_args.append(arg)
@@ -98,7 +98,7 @@ def main(args):
     local_args = pywikibot.handle_args(global_args)
 
     if article:
-        print article[::-1]
+        print(article[::-1])
         gen = [pywikibot.Page(site, article.decode('utf-8'))]
         gen = pagegenerators.PreloadingGenerator(gen)
     else:
@@ -108,7 +108,7 @@ def main(args):
     bot = SectionTitleReplacerBot(generator = gen,site = site)
     bot.run()  
 
-    print '_____________________DONE____________________'
+    print('_____________________DONE____________________')
     
 
 if __name__ == "__main__":

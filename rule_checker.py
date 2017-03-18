@@ -222,9 +222,9 @@ def check_part(page_title,part_title,part_text, part_type):
         no_nikud_title = re.sub('[\u0591-\u05c7\u200f]','',real_title)
         no_nikud_title = re.sub('[״]','"',no_nikud_title)
         if no_nikud_title != page_title:
-            print 'DIFFERENT'
-            print [page_title]
-            print [no_nikud_title]
+            print ('DIFFERENT')
+            print ([page_title])
+            print ([no_nikud_title])
             if WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE not in warnings:
                 warnings[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = []
             warnings[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] += ['כותרת משנה ללא ניקוד: %s' % no_nikud_title ]
@@ -311,13 +311,13 @@ def check_page(site, page_title, page_text):
     # has no '=' at all
     if re.compile('^=([^=]+.*|=[^=]*)=\s*$',re.MULTILINE).match(page_text):
         warnings[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = []
-        print 'page with first level title' + page_title 
+        print ('page with first level title' + page_title )
 
     
     parts_gen = split_parts(page_text)
 
     # the first part will always be either an empty string or a string before the first definition (like {{לשכתוב}})
-    first = parts_gen.next()
+    first = parts_gen.__next__()
 
     if re.compile("<!--יש למחוק את המיותר בסוף מילוי התבנית, כמו את שורה זו למשל-->").match(first[0]):
         warnings[WARNING_PAGE_WITH_COMMENT] = []
@@ -356,7 +356,7 @@ def main(args):
     
     site = pywikibot.Site('he', 'wiktionary')
 
-    print args
+    print (args)
     global_args  = []
 
     limit = -1
@@ -394,7 +394,7 @@ def main(args):
         #gen_factory.getCombinedGenerator()
         gen =  pagegenerators.AllpagesPageGenerator(site = site)
 
-    print '#@#@#@#@#@#@##@#@#@#@#@#@#@#@#@##@#@#@#@#@#@#@#@#@##@#@#@#@#@#@#@#@#@##@#@#@'
+    print ('#@#@#@#@#@#@##@#@#@#@#@#@#@#@#@##@#@#@#@#@#@#@#@#@##@#@#@#@#@#@#@#@#@##@#@#@')
 
     # a dictionary where the key is the issue and the value is list of pages violates it
     pages_by_issues = dict()
@@ -417,14 +417,14 @@ def main(args):
                         pages_by_issues[issue].append( ('* [[%s]] :' % page.title()) + detailed_issue)
 
         except pywikibot.IsRedirectPage:
-            print page.title().encode('utf-8') + "is redirect page".encode('utf-8')
+            print (page.title().encode('utf-8') + "is redirect page".encode('utf-8'))
             continue
         except pywikibot.NoPage:
-            print page.title().encode('utf-8') + ": NoPage exception".encode('utf-8')
+            print (page.title().encode('utf-8') + ": NoPage exception".encode('utf-8'))
             continue
     # after going over all pages, report it to a maintenance page so human go over it
     for issue, pages in pages_by_issues.items():
-        print 'found issue %s' % issue
+        print ('found issue %s' % issue)
         report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % issue)
          
         report_content = 'סך הכל %s ערכים\n' % str(len(pages))
@@ -440,7 +440,7 @@ def main(args):
 
 
     
-    print '_____________________DONE____________________'
+    print ('_____________________DONE____________________')
     
 
 print 
