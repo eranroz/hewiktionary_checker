@@ -83,6 +83,25 @@ class NonAcronymWithGereshChecker(Checker):
             return True
         return False
 
+#########################
+class GershaimInMareMakom(pywikibot.CurrentPageBot):
+    
+    def __init__(self):
+        super(GershaimInMareMakom,self).__init__()
+        self._tsat = u'צט'
+        self._tanah = u'תנ"ך'
+        
+    def rule_break_found(self,page_title,text_title,text):
+        tsitutim = re.findall(u'\{\{'+self._tsat+u'/'+self._tanah+u'([^{}]*)\}\}',text,re.MULTILINE)
+        if tsitutim:
+            for tsitut in tsitutim:
+                parts = tsitut.split('|')
+                
+                if hewiktionary_constants.GERSHAIM_GERESH_REGEX.findall(parts[-1]) or hewiktionary_constants.GERSHAIM_GERESH_REGEX.findall(parts[-2]) or hewiktionary_constants.GERSHAIM_GERESH_REGEX.findall(parts[-3]):
+                    return True
+        return False
+#########################
+
 #classes that check by definition
             
 class SecondLevelTitleField(Checker):

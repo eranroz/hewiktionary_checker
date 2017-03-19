@@ -40,6 +40,7 @@ WARNING_2nd_LEVEL_TITLE_FROM_LIST = 'דפים עם כותרת סעיף מסדר 
 WARNING_TITLE_WITH_HTML_TAGS = 'דפים עם תגיות היפר-טקסט בכותרת'
 WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE = 'דפים בהם כותרת מסדר 2 ללא ניקוד שונה משם הדף'
 WARNING_NO_NIKUD_IN_SEC_TITLE  = 'דפים עם כותרת משנה לא מנוקדת'
+WARNING_GERSHAIM_IN_MARE_MAKOM = 'דפים עם ציטוט מהתנך עם גרשיים במראי מקום'
 
 warning_to_code = {
 
@@ -56,6 +57,7 @@ warning_to_code = {
     WARNING_TITLE_WITH_HTML_TAGS  : "ht",
     WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE  : "stdpt",
     WARNING_NO_NIKUD_IN_SEC_TITLE  : "nnst",
+    WARNING_GERSHAIM_IN_MARE_MAKOM : "gmm",
 }
 
 warning_to_checker = {}
@@ -68,6 +70,7 @@ def fill_warning_to_checker(issues):
         warning_to_checker[WARNING_PAGE_ACRONYM_NO_GERSHAIM] = checker.AcronymWithoutGereshChecker()
         warning_to_checker[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = checker.FirstLevelTitleChecker()
         warning_to_checker[WARNINGS_PAGE_WITHOUT_TITLE] = checker.NoTitleChecker()
+        warning_to_checker[WARNING_GERSHAIM_IN_MARE_MAKOM] = checker.GershaimInMareMakom()
     else:
         if WARNING_PAGE_WITH_TEXT_BEFORE_DEF in issues:
             warning_to_checker[WARNING_PAGE_WITH_TEXT_BEFORE_DEF] = checker.TextBeforeDefChecker()
@@ -79,6 +82,8 @@ def fill_warning_to_checker(issues):
             warning_to_checker[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = checker.FirstLevelTitleChecker()
         if WARNINGS_PAGE_WITHOUT_TITLE in issues:
             warning_to_checker[WARNINGS_PAGE_WITHOUT_TITLE] = checker.NoTitleChecker()
+        if WARNING_GERSHAIM_IN_MARE_MAKOM in issues:
+            warning_to_checker[WARNING_GERSHAIM_IN_MARE_MAKOM] = checker.GershaimInMareMakom()
 
 warning_to_item_checker = {}
 

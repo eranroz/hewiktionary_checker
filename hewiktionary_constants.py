@@ -5,6 +5,9 @@ verb_template_regex='\n*{{ניתוח\s+דקדוקי\sלפועל\s*\|?\s*'
  
 GERSHAIM_REGEX = re.compile('["״]')
 KATEGORIA_PITGAMI_REGEX = re.compile(u'\\[\\[\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4:.*(\u05e0\u05d9\u05d1\u05d9\u05dd|\u05d1\u05d9\u05d8\u05d5\u05d9\u05d9\u05dd|\u05e4\u05ea\u05d2\u05de\u05d9\u05dd).*\\]\\]')
+
+GERSHAIM_GERESH_REGEX = re.compile('["״\'\׳]')
+
 GIZRON = "גיזרון"
 MAKOR = "מקור"
 PARSHANIM = "פרשנים מפרשים"
