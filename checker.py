@@ -27,14 +27,15 @@ class FirstLevelTitleChecker(Checker):
 
 class TextBeforeDefChecker(Checker):
     def rule_break_found(self,page_title,text_title,text):
-        before = re.compile("^(.*)==[^=]+==\s*",re.MULTILINE).search(text)
+        before = re.compile("^([^=]*)==[^=]+==\s*",re.MULTILINE).search(text)
         if not before:
-            print("TextBeforeDefChecker: not before:")
+#            print("TextBeforeDefChecker: not before:")
             return False
         text_before = before.group(1)
         if text_before != u'' and not re.compile("^\n*\{?").match(text_before):
             return True
-        print("TextBeforeDefChecker: before: -%s-" % (text_before))
+#        print("TextBeforeDefChecker: before: -%s-" % (before.group(0)))
+#        print("TextBeforeDefChecker: text_before: -%s-" % (text_before))
         return False
     
 class NoTitleChecker(Checker):
@@ -48,17 +49,17 @@ class NoGremmerBoxChecker(Checker):
     def rule_break_found(self,page_title,text_title,text):
         
         if hewiktionary_constants.KATEGORIA_PITGAMI_REGEX.search(text) or text.endswith("'"):
-            return False
+            return ''
         elif re.compile(hewiktionary_constants.template_regex+'\n').match(text):
-            return False
+            return ''
         elif re.search(hewiktionary_constants.verb_template_regex,text):
-            return False
+            return ''
         elif re.search(hewiktionary_constants.GERSHAIM_REGEX,text_title):
-            return False
+            return ''
         elif re.search('[a-zA-Z]',text_title):
-            return False
+            return ''
         else:
-            return True
+            return ['אין טבלת ניתוח דקדוקי %s' % text_title]
         
 class AcronymWithoutGereshChecker(Checker):
     def rule_break_found(self,page_title,text_title,text):

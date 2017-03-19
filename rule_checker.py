@@ -58,6 +58,65 @@ warning_to_code = {
     WARNING_NO_NIKUD_IN_SEC_TITLE  : "nnst",
 }
 
+warning_to_checker = {}
+
+def fill_warning_to_checker(issues):
+
+    if len(issues) == 0:
+        warning_to_checker[WARNING_PAGE_WITH_TEXT_BEFORE_DEF] = checker.TextBeforeDefChecker()
+        warning_to_checker[WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM] = checker.NonAcronymWithGereshChecker()
+        warning_to_checker[WARNING_PAGE_ACRONYM_NO_GERSHAIM] = checker.AcronymWithoutGereshChecker()
+        warning_to_checker[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = checker.FirstLevelTitleChecker()
+        warning_to_checker[WARNINGS_PAGE_WITHOUT_TITLE] = checker.NoTitleChecker()
+    else:
+        if WARNING_PAGE_WITH_TEXT_BEFORE_DEF in issues:
+            warning_to_checker[WARNING_PAGE_WITH_TEXT_BEFORE_DEF] = checker.TextBeforeDefChecker()
+        if WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM in issues:
+            warning_to_checker[WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM] = checker.NonAcronymWithGereshChecker()
+        if WARNING_PAGE_ACRONYM_NO_GERSHAIM in issues:
+            warning_to_checker[WARNING_PAGE_ACRONYM_NO_GERSHAIM] = checker.AcronymWithoutGereshChecker()
+        if WARNING_PAGE_WITH_FIRST_LEVEL_TITLE in issues:
+            warning_to_checker[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = checker.FirstLevelTitleChecker()
+        if WARNINGS_PAGE_WITHOUT_TITLE in issues:
+            warning_to_checker[WARNINGS_PAGE_WITHOUT_TITLE] = checker.NoTitleChecker()
+
+warning_to_item_checker = {}
+
+def fill_warning_to_item_checker(issues):
+    if len(issues) == 0:
+        warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()
+        warning_to_item_checker[WARNING_TITLE_WITH_HTML_TAGS] = checker.HtmlTagsInTitle()
+        warning_to_item_checker[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = checker.ItemTitleDiffPageTitle()
+        warning_to_item_checker[WARNING_NO_NIKUD_IN_SEC_TITLE] = checker.NoNikudInSecTitle()
+        warning_to_item_checker[WARNING_PAGE_WITHOUT_GREMMER_BOX] = checker.NoGremmerBoxChecker()
+
+    else:
+        if WARNING_2nd_LEVEL_TITLE_FROM_LIST in issues:
+            warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()
+            
+        if WARNING_TITLE_WITH_HTML_TAGS in issues:    
+            warning_to_item_checker[WARNING_TITLE_WITH_HTML_TAGS] = checker.HtmlTagsInTitle()
+            
+        if WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE in issues:
+            warning_to_item_checker[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = checker.ItemTitleDiffPageTitle()
+        if WARNING_NO_NIKUD_IN_SEC_TITLE in issues:
+            warning_to_item_checker[WARNING_NO_NIKUD_IN_SEC_TITLE] = checker.NoNikudInSecTitle()
+
+        if WARNING_PAGE_WITHOUT_GREMMER_BOX in issues:
+            warning_to_item_checker[WARNING_PAGE_WITHOUT_GREMMER_BOX] = checker.NoGremmerBoxChecker()
+                    
+warning_to_field_checker = {}
+
+def fill_warning_to_field_checker(issues):
+    if len(issues) == 0:
+        warning_to_field_checker[WARNING_PAGE_WITH_INVALID_FIELD] = checker.InvalidFieldItemChecker()
+        warning_to_field_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
+    else:
+        if WARNING_PAGE_WITH_INVALID_FIELD in issues:
+            warning_to_field_checker[WARNING_PAGE_WITH_INVALID_FIELD] = checker.InvalidFieldItemChecker()
+        if WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER in issues:
+            warning_to_field_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
+            
 def get_dump():
     """
     This function downloads teh latest wiktionary dump
@@ -112,42 +171,6 @@ def split_parts(page_text):
         part = parts[i+1]
         yield (title,part)
         
-warning_to_item_checker = {}
-
-def fill_warning_to_item_checker(issues):
-    if len(issues) == 0:
-        warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()
-        warning_to_item_checker[WARNING_TITLE_WITH_HTML_TAGS] = checker.HtmlTagsInTitle()
-        warning_to_item_checker[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = checker.ItemTitleDiffPageTitle()
-        warning_to_item_checker[WARNING_NO_NIKUD_IN_SEC_TITLE] = checker.NoNikudInSecTitle()
-    else:
-        if WARNING_2nd_LEVEL_TITLE_FROM_LIST in issues:
-            warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()
-            
-        if WARNING_TITLE_WITH_HTML_TAGS in issues:    
-            warning_to_item_checker[WARNING_TITLE_WITH_HTML_TAGS] = checker.HtmlTagsInTitle()
-            
-        if WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE in issues:
-            warning_to_item_checker[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = checker.ItemTitleDiffPageTitle()
-        if WARNING_NO_NIKUD_IN_SEC_TITLE in issues:
-            warning_to_item_checker[WARNING_NO_NIKUD_IN_SEC_TITLE] = checker.NoNikudInSecTitle()
-
-        print("warning_to_item_checker")
-        print(warning_to_item_checker)
-warning_to_field_checker = {}
-
-def fill_warning_to_field_checker(issues):
-    if len(issues) == 0:
-        warning_to_field_checker[WARNING_PAGE_WITH_INVALID_FIELD] = checker.InvalidFieldItemChecker()
-        warning_to_field_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
-    else:
-        if WARNING_PAGE_WITH_INVALID_FIELD in issues:
-            warning_to_field_checker[WARNING_PAGE_WITH_INVALID_FIELD] = checker.InvalidFieldItemChecker()
-        if WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER in issues:
-            warning_to_field_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
-    print("warning_to_field_checker")
-    print(warning_to_field_checker)
-        
 
 def check_part(page_title,title,part_text):
 
@@ -177,32 +200,7 @@ def check_part(page_title,title,part_text):
                 
     return warnings
 
-warning_to_checker = {}
 
-def fill_warning_to_checker(issues):
-
-    if len(issues) == 0:
-        warning_to_checker[WARNING_PAGE_WITH_TEXT_BEFORE_DEF] = checker.TextBeforeDefChecker()
-        warning_to_checker[WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM] = checker.NonAcronymWithGereshChecker()
-        warning_to_checker[WARNING_PAGE_ACRONYM_NO_GERSHAIM] = checker.AcronymWithoutGereshChecker()
-        warning_to_checker[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = checker.FirstLevelTitleChecker()
-        warning_to_checker[WARNINGS_PAGE_WITHOUT_TITLE] = checker.NoTitleChecker()
-    else:
-        if WARNING_PAGE_WITH_TEXT_BEFORE_DEF in issues:
-            warning_to_checker[WARNING_PAGE_WITH_TEXT_BEFORE_DEF] = checker.TextBeforeDefChecker()
-        if WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM in issues:
-            warning_to_checker[WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM] = checker.NonAcronymWithGereshChecker()
-        if WARNING_PAGE_ACRONYM_NO_GERSHAIM in issues:
-            warning_to_checker[WARNING_PAGE_ACRONYM_NO_GERSHAIM] = checker.AcronymWithoutGereshChecker()
-        if WARNING_PAGE_WITH_FIRST_LEVEL_TITLE in issues:
-            warning_to_checker[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = checker.FirstLevelTitleChecker()
-        if WARNINGS_PAGE_WITHOUT_TITLE in issues:
-            warning_to_checker[WARNINGS_PAGE_WITHOUT_TITLE] = checker.NoTitleChecker()
-
-        print("warning_to_checker")
-        print(warning_to_checker)
-    
-    
 def check_page(site, page_title, page_text):
     """
     This function checks for violations of the common structure in wiktionary.
@@ -230,23 +228,18 @@ def check_page(site, page_title, page_text):
     parts_gen.__next__()
 
     for part in parts_gen:
-        if checker.NoGremmerBoxChecker().rule_break_found(page_title,part[0],part[1]):
-            warnings[WARNING_PAGE_WITHOUT_GREMMER_BOX] = []
         w = check_part(page_title,re.compile("^==\s*([^=]+)\s*==\s*\n*").search(part[0]).group(1).strip() ,part[1])
         for key in w:
             if key in warnings:
                 warnings[key] += w[key]
             else:
                 warnings[key] = w[key]
-
     return warnings
 
 
 def main(args):
     
     site = pywikibot.Site('he', 'wiktionary')
-
-    print (args)
     global_args  = []
 
     limit = -1
@@ -258,7 +251,7 @@ def main(args):
         l = re.compile('^-list-issues$').match(arg)
         for key,val in warning_to_code.items():
             if re.compile('^'+val+'$').match(arg):
-                issues_to_search += key
+                issues_to_search += [key]
         if arg == '--get-dump':
             get_dump()  # download the latest dump if it doesnt exist
         elif m:
@@ -268,7 +261,7 @@ def main(args):
         elif l:
             l = []
             for key,val in warning_to_code.items():
-                l+=[key,val]
+                l+=[key[::-1],val]
                 
             sys.exit("List of issues checked, you can run the command with the issue code in order to run only this issue:\n"+"%s (code: %s)\n"*len(warning_to_code) % tuple(l))
         else:
@@ -296,11 +289,9 @@ def main(args):
         gen =  pagegenerators.AllpagesPageGenerator(site = site)
 
     
-
     # a dictionary where the key is the issue and the value is list of pages violates it
     pages_by_issues = dict()
 
-    
     fill_warning_to_checker(issues_to_search)
     fill_warning_to_item_checker(issues_to_search)
     fill_warning_to_field_checker(issues_to_search)
@@ -316,11 +307,9 @@ def main(args):
                 if issue not in pages_by_issues:
                     pages_by_issues[issue] = []
                 if issues[issue] == []:
-                    #print 'ADDING %s to pages by issues' % page.title()
                     pages_by_issues[issue].append('* [[%s]]' % page.title())
                 else:
                     for detailed_issue in issues[issue]:
-                        #print 'ADDING detailed issue %s to pages by issues' % detailed_issue
                         pages_by_issues[issue].append( ('* [[%s]] :' % page.title()) + detailed_issue)
 
         except pywikibot.IsRedirectPage:
@@ -337,21 +326,12 @@ def main(args):
         report_content = 'סך הכל %s ערכים\n' % str(len(pages))
         pages = sorted(pages)
         report_content +=  '\n'.join(['%s' % p for p in pages])
-        report_content += "\n\n[[קטגוריה: ויקימילון - תחזוקה]]"
-        f = open('%s.txt' % issue ,'w')
-        #f.write(report_content.encode('utf-8'))
-        f.write(report_content)
-        
-        #print report_content
-                    
+        report_content += "\n\n[[קטגוריה: ויקימילון - תחזוקה]]"                    
         report_page.text = report_content
         report_page.save("סריקה עם בוט ")
-
-
-    
+        
     print ('_____________________DONE____________________')
     
-
 print 
 if __name__ == "__main__":
     main(sys.argv)
