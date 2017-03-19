@@ -19,51 +19,12 @@ from __future__ import division
 import pywikibot
 from pywikibot import pagegenerators
 import re
-import pywikibot.textlib
 import os
 from pywikibot.xmlreader import XmlDump
 import requests
 import sys
-
-
-
-GERSHAIM_REGEX = re.compile('["״]')
-KATEGORIA_PITGAMI_REGEX = re.compile(u'\\[\\[\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4:.*(\u05e0\u05d9\u05d1\u05d9\u05dd|\u05d1\u05d9\u05d8\u05d5\u05d9\u05d9\u05dd|\u05e4\u05ea\u05d2\u05de\u05d9\u05dd).*\\]\\]')
-GIZRON = "גיזרון"
-MAKOR = "מקור"
-PARSHANIM = "פרשנים מפרשים"
-TSERUFIM = "צירופים"
-NIGZAROT = "נגזרות"
-NIRDAFOT = "מילים נרדפות"
-KROVIM = "ביטויים קרובים"
-NIGUDIM = "ניגודים"
-TERGUM = "תרגום"
-MEIDA = "מידע נוסף"
-REOGAM = "ראו גם"
-KISHURIM = "קישורים חיצוניים"
-SIMUCHIN = "סימוכין"
-SHULAIM = "הערות שוליים"
-
-
-titles_to_order = {
-
-    GIZRON : 0,
-    MAKOR  : 0,
-    PARSHANIM : 1,  
-    TSERUFIM :  2,
-    NIGZAROT : 3,
-    NIRDAFOT : 4,
-    KROVIM  : 4,
-    NIGUDIM : 5,
-    TERGUM : 6,
-    MEIDA : 7,
-    REOGAM : 8,
-    KISHURIM : 9,
-    SIMUCHIN : 10,
-    SHULAIM : 11,
-}
-
-titles_list  = list(titles_to_order.keys())
+import checker
+import hewiktionary_constants
 
 
 WARNING_PAGE_WITH_INVALID_FIELD = 'דפים עם סעיפים שאינם מהרשימה הסגורה'
@@ -80,20 +41,22 @@ WARNING_TITLE_WITH_HTML_TAGS = 'דפים עם תגיות היפר-טקסט בכ�
 WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE = 'דפים בהם כותרת מסדר 2 ללא ניקוד שונה משם הדף'
 WARNING_NO_NIKUD_IN_SEC_TITLE  = 'דפים עם כותרת משנה לא מנוקדת'
 
-#ordered_secondary_titles = {
-#"גיזרון/מקור",
-#"פרשנים מפרשים",
-#"צירופים",
-#"נגזרות",
-#"מילים נרדפות/ביטויים קרובים",
-#"ניגודים",
-#"תרגום",
-#"מידע נוסף",
-#"ראו גם",
-#קישורים חיצוניים",
-#סימוכין",
-#הערות שוליים"
-#
+warning_to_code = {
+
+    WARNING_PAGE_WITH_INVALID_FIELD : "if",
+    WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER : "fwo",
+    WARNING_PAGE_WITH_COMMENT : "c",
+    WARNING_PAGE_WITH_TEXT_BEFORE_DEF : "tbd", 
+    WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM : "g",
+    WARNING_PAGE_ACRONYM_NO_GERSHAIM : "ang",
+    WARNING_PAGE_WITHOUT_GREMMER_BOX : "wgb",
+    WARNING_PAGE_WITH_FIRST_LEVEL_TITLE : "flt",
+    WARNINGS_PAGE_WITHOUT_TITLE  : "wt",
+    WARNING_2nd_LEVEL_TITLE_FROM_LIST  : "2ltfl",
+    WARNING_TITLE_WITH_HTML_TAGS  : "ht",
+    WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE  : "stdpt",
+    WARNING_NO_NIKUD_IN_SEC_TITLE  : "nnst",
+}
 
 def get_dump():
     """
@@ -142,152 +105,104 @@ def split_parts(page_text):
     #matches the level2 title, e.g '== ילד =='
     parts = re.compile("(^==[^=]+==\s*$)",re.MULTILINE).split(page_text)
 
-    yield (parts.pop(0),'',PAGE_PART_TYPE.UNKNOWN)
-
-
-    template_regex='\n*{{ניתוח\s+דקדוקי\s*\|?\s*'
-    verb_template_regex='\n*{{ניתוח\s+דקדוקי\sלפועל\s*\|?\s*'
-    p = re.compile( template_regex+'\n')
-
-    for i in range(0,len(parts),2):
-        
+    yield (parts.pop(0),'')
+    
+    for i in range(0,len(parts),2):        
         title = parts[i]
         part = parts[i+1]
+        yield (title,part)
+        
+warning_to_item_checker = {}
 
-        if KATEGORIA_PITGAMI_REGEX.search(part) or part.endswith("'"):
-            yield (title,part,PAGE_PART_TYPE.PHRASE)
-        elif p.match(part):
-            yield (title,part,PAGE_PART_TYPE.NOUN)
-        elif re.search(verb_template_regex,part):
-            yield (title,part,PAGE_PART_TYPE.VERB)
-        elif re.search(GERSHAIM_REGEX,title):
-            yield (title,part,PAGE_PART_TYPE.RASHEY_TEVOT)
-        elif re.search('[a-zA-Z]',title):
-            yield (title,part,PAGE_PART_TYPE.NON_HEBREW)
-        else:
-            yield (title,part,PAGE_PART_TYPE.UNKNOWN)
-
-class PAGE_PART_TYPE:
-    NOUN = 1
-    VERB = 2
-    PHRASE = 3
-    UNKNOWN = 4
-    RASHEY_TEVOT = 5
-    NON_HEBREW = 6
-    
-
-
-def check_noun(page_text):
-    warnings = {}
-    #print('NOT IMPLEMENTED')
-    return warnings
-
-
-def check_verb(part_type):
-    warnings = {}
-    #print('NOT IMPLEMENTED')
-    return warnings
-
-
-def check_phrase(part_type):
-    warnings = {}
-    #print('NOT IMPLEMENTED')
-    return warnings
-
-
-def common_checks(part_type):
-    warnings = {}
-    #print('NOT IMPLEMENTED')
-    return warnings
-
-
-
-def check_part(page_title,part_title,part_text, part_type):
-    #print '=========start check_part ==========='
-
-    #print part_title
-
-    warnings = {}
-    title = re.compile("^==\s*([^=]+)\s*==\s*\n*").search(part_title).group(1).strip()
-    if title in titles_list:
-        #print title+" in list"
-        warnings[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = ['סעיף עם כתורת מסדר 2: %s' % title]
-    elif '<' in title:
-        warnings[WARNING_TITLE_WITH_HTML_TAGS] = ['%s' % title]
+def fill_warning_to_item_checker(issues):
+    if len(issues) == 0:
+        warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()
+        warning_to_item_checker[WARNING_TITLE_WITH_HTML_TAGS] = checker.HtmlTagsInTitle()
+        warning_to_item_checker[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = checker.ItemTitleDiffPageTitle()
+        warning_to_item_checker[WARNING_NO_NIKUD_IN_SEC_TITLE] = checker.NoNikudInSecTitle()
     else:
-        
-        real_title = re.compile('([^\{\}\)\(]*)(\{\{.*\}\})?(\(.*\))?').search(title).group(1).strip()
-#        print 'real title:'
-#        print real_title
-        no_nikud_title = re.sub('[\u0591-\u05c7\u200f]','',real_title)
-        no_nikud_title = re.sub('[״]','"',no_nikud_title)
-        if no_nikud_title != page_title:
-            print ('DIFFERENT')
-            print ([page_title])
-            print ([no_nikud_title])
-            if WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE not in warnings:
-                warnings[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = []
-            warnings[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] += ['כותרת משנה ללא ניקוד: %s' % no_nikud_title ]
-        
-        else:
-            words_in_title =  re.compile('[\s]+').split(title)
-            for word in words_in_title:
-                nikud_num  = len(re.findall(u'[\u05b0-\u05bc]',word))
-                he_num = len(re.findall(u'[\u0591-\u05f4]',word))
-                other_num = len(re.findall(u'[\'|}{)("״]',word))
+        if WARNING_2nd_LEVEL_TITLE_FROM_LIST in issues:
+            warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()
+            
+        if WARNING_TITLE_WITH_HTML_TAGS in issues:    
+            warning_to_item_checker[WARNING_TITLE_WITH_HTML_TAGS] = checker.HtmlTagsInTitle()
+            
+        if WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE in issues:
+            warning_to_item_checker[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = checker.ItemTitleDiffPageTitle()
+        if WARNING_NO_NIKUD_IN_SEC_TITLE in issues:
+            warning_to_item_checker[WARNING_NO_NIKUD_IN_SEC_TITLE] = checker.NoNikudInSecTitle()
 
-                if len(word)> 2 and  other_num == 0 and  he_num > 0 and nikud_num == 0:
-                    if WARNING_NO_NIKUD_IN_SEC_TITLE not in warnings:
-                        warnings[WARNING_NO_NIKUD_IN_SEC_TITLE] = []
-                    warnings[WARNING_NO_NIKUD_IN_SEC_TITLE] += ['כותרת: %s' % title ]
-        
-    fields = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).split(part_text)
-    state = -1
-    tit = 0
+        print("warning_to_item_checker")
+        print(warning_to_item_checker)
+warning_to_field_checker = {}
 
-    last_match = ''
+def fill_warning_to_field_checker(issues):
+    if len(issues) == 0:
+        warning_to_field_checker[WARNING_PAGE_WITH_INVALID_FIELD] = checker.InvalidFieldItemChecker()
+        warning_to_field_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
+    else:
+        if WARNING_PAGE_WITH_INVALID_FIELD in issues:
+            warning_to_field_checker[WARNING_PAGE_WITH_INVALID_FIELD] = checker.InvalidFieldItemChecker()
+        if WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER in issues:
+            warning_to_field_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
+    print("warning_to_field_checker")
+    print(warning_to_field_checker)
+        
+
+def check_part(page_title,title,part_text):
+
+    warnings = {}
+    
+    for key, value in warning_to_item_checker.items():
+        v = value.rule_break_found(page_title,title,part_text)
+        if v:
+            if key not in warnings:
+                warnings[key] = []
+            warnings[key] += v
+            
+    fields = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).findall(part_text)
+
+    for key, value in warning_to_field_checker.items():
+        value.reset_state()
+        
     for f in fields:
-        if tit == 1:
-            match =  re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1)
-            match = match.strip()
-
-            if not titles_to_order.has_key(match):
-                if WARNING_PAGE_WITH_INVALID_FIELD not in warnings:
-                    warnings[WARNING_PAGE_WITH_INVALID_FIELD] = []
-                warnings[WARNING_PAGE_WITH_INVALID_FIELD] += ['סעיף שאינו מהרשימה: %s' % match]
-            else:
-                new_state = titles_to_order[match]
-                if new_state < state:
-                    if WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER not in warnings:
-                        warnings[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = []
-                    warnings[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] += ['סעיף %s צריך להיות לפני סעיף %s' % (match,last_match) ]
-                else:
-                    state = new_state
-                    last_match = match
-        tit = 1 - tit
-
-    if part_type == PAGE_PART_TYPE.NOUN:
-        warnings.update(check_noun(part_type))
-    elif part_type == PAGE_PART_TYPE.VERB:
-        warnings.update(check_verb(part_type))
-    elif part_type == PAGE_PART_TYPE.PHRASE:
-        warnings.update(check_phrase(part_type))
-
-    #warnings += common_checks(part_text)
-    #if warnings:
-    #    print warnings
-    #    print '=========end check_part ==========='
+        field_title =  re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
+        
+        for key, value in warning_to_field_checker.items():
+            v = value.rule_break_found(page_title,'',field_title)
+            if v:
+                if key not in warnings:
+                    warnings[key] = []
+                warnings[key] += v
+                
     return warnings
 
+warning_to_checker = {}
 
-def update_dict_lists(dict1,dict2):
-    for key in dict2:
-        if key in dict1:
-            dict1[key] += dict2[key]
-        else:
-            dict1[key] = dict2[key]
+def fill_warning_to_checker(issues):
 
+    if len(issues) == 0:
+        warning_to_checker[WARNING_PAGE_WITH_TEXT_BEFORE_DEF] = checker.TextBeforeDefChecker()
+        warning_to_checker[WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM] = checker.NonAcronymWithGereshChecker()
+        warning_to_checker[WARNING_PAGE_ACRONYM_NO_GERSHAIM] = checker.AcronymWithoutGereshChecker()
+        warning_to_checker[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = checker.FirstLevelTitleChecker()
+        warning_to_checker[WARNINGS_PAGE_WITHOUT_TITLE] = checker.NoTitleChecker()
+    else:
+        if WARNING_PAGE_WITH_TEXT_BEFORE_DEF in issues:
+            warning_to_checker[WARNING_PAGE_WITH_TEXT_BEFORE_DEF] = checker.TextBeforeDefChecker()
+        if WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM in issues:
+            warning_to_checker[WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM] = checker.NonAcronymWithGereshChecker()
+        if WARNING_PAGE_ACRONYM_NO_GERSHAIM in issues:
+            warning_to_checker[WARNING_PAGE_ACRONYM_NO_GERSHAIM] = checker.AcronymWithoutGereshChecker()
+        if WARNING_PAGE_WITH_FIRST_LEVEL_TITLE in issues:
+            warning_to_checker[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = checker.FirstLevelTitleChecker()
+        if WARNINGS_PAGE_WITHOUT_TITLE in issues:
+            warning_to_checker[WARNINGS_PAGE_WITHOUT_TITLE] = checker.NoTitleChecker()
 
+        print("warning_to_checker")
+        print(warning_to_checker)
+    
+    
 def check_page(site, page_title, page_text):
     """
     This function checks for violations of the common structure in wiktionary.
@@ -305,49 +220,24 @@ def check_page(site, page_title, page_text):
     if page_title.endswith('(שורש)'):
         return warnings
 
-    # look for any string '= x =' where x either:
-    # starts with '=' but doesn't ends with '='
-    # strats with anyhting but '=' and ends with '='
-    # has no '=' at all
-    if re.compile('^=([^=]+.*|=[^=]*)=\s*$',re.MULTILINE).match(page_text):
-        warnings[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = []
-        print ('page with first level title' + page_title )
-
-    
+    for key, value in warning_to_checker.items():
+        if value.rule_break_found(page_title,'',page_text):
+            warnings[key] = []
+         
     parts_gen = split_parts(page_text)
 
     # the first part will always be either an empty string or a string before the first definition (like {{לשכתוב}})
-    first = parts_gen.__next__()
-
-    if re.compile("<!--יש למחוק את המיותר בסוף מילוי התבנית, כמו את שורה זו למשל-->").match(first[0]):
-        warnings[WARNING_PAGE_WITH_COMMENT] = []
-
-    elif first[0] != u'' and not re.compile("^\n*\{?").match(first[0]):
-        warnings[WARNING_PAGE_WITH_TEXT_BEFORE_DEF] = []
-    
-    defs_num = 0
+    parts_gen.__next__()
 
     for part in parts_gen:
-        if part[2] ==  PAGE_PART_TYPE.UNKNOWN:
+        if checker.NoGremmerBoxChecker().rule_break_found(page_title,part[0],part[1]):
             warnings[WARNING_PAGE_WITHOUT_GREMMER_BOX] = []
-        w = check_part(page_title,part[0],part[1], part[2])
+        w = check_part(page_title,re.compile("^==\s*([^=]+)\s*==\s*\n*").search(part[0]).group(1).strip() ,part[1])
         for key in w:
             if key in warnings:
                 warnings[key] += w[key]
             else:
                 warnings[key] = w[key]
-        defs_num = defs_num + 1
-
-    if defs_num == 0:
-        #print 'page' + page_title +'has no defenitions'
-        warnings[WARNINGS_PAGE_WITHOUT_TITLE] = []
-        
-    text_categories = [cat.title(withNamespace=False) for cat in pywikibot.textlib.getCategoryLinks(page_text, site)]
-
-    if GERSHAIM_REGEX.findall(page_title) and ('ראשי תיבות' not in text_categories):
-        warnings[WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM] = []  # FIX: warning for gershaim which aren't in category
-    elif not GERSHAIM_REGEX.findall(page_title) and ('ראשי תיבות' in text_categories):
-        warnings[WARNING_PAGE_ACRONYM_NO_GERSHAIM]  = []# FIX: warning for rashi taivut without gershaim
 
     return warnings
 
@@ -361,15 +251,26 @@ def main(args):
 
     limit = -1
     article = ''
+    issues_to_search = []
     for arg in args:
         m = re.compile('^-limit:([0-9]+)$').match(arg)
         a = re.compile('^-article:(.+)$').match(arg)
+        l = re.compile('^-list-issues$').match(arg)
+        for key,val in warning_to_code.items():
+            if re.compile('^'+val+'$').match(arg):
+                issues_to_search += key
         if arg == '--get-dump':
             get_dump()  # download the latest dump if it doesnt exist
         elif m:
             limit = int(m.group(1))
         elif a:
             article = a.group(1)
+        elif l:
+            l = []
+            for key,val in warning_to_code.items():
+                l+=[key,val]
+                
+            sys.exit("List of issues checked, you can run the command with the issue code in order to run only this issue:\n"+"%s (code: %s)\n"*len(warning_to_code) % tuple(l))
         else:
             global_args.append(arg)
 
@@ -394,10 +295,16 @@ def main(args):
         #gen_factory.getCombinedGenerator()
         gen =  pagegenerators.AllpagesPageGenerator(site = site)
 
-    print ('#@#@#@#@#@#@##@#@#@#@#@#@#@#@#@##@#@#@#@#@#@#@#@#@##@#@#@#@#@#@#@#@#@##@#@#@')
+    
 
     # a dictionary where the key is the issue and the value is list of pages violates it
     pages_by_issues = dict()
+
+    
+    fill_warning_to_checker(issues_to_search)
+    fill_warning_to_item_checker(issues_to_search)
+    fill_warning_to_field_checker(issues_to_search)
+
     for page in gen:
         if limit == 0:
             break
@@ -432,7 +339,9 @@ def main(args):
         report_content +=  '\n'.join(['%s' % p for p in pages])
         report_content += "\n\n[[קטגוריה: ויקימילון - תחזוקה]]"
         f = open('%s.txt' % issue ,'w')
-        f.write(report_content.encode('utf-8'))
+        #f.write(report_content.encode('utf-8'))
+        f.write(report_content)
+        
         #print report_content
                     
         report_page.text = report_content
