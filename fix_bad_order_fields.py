@@ -1,58 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 r"""
-This bot will validate page against list of rules in he-wiktionary
+This bot sort the fields (sections) of a definition according to the predetermined order decided by the hebrew wiktionary community
+The order is represeted by the constant titles_to_order defined in hewiktionary_constants.py
 
-Use get_dump to get the full dump (for developing we are analyzing the full dump)
-
-&params;
-
-Please type "rule_checker.py -help | more" if you can't read the top of the help.
 """
-
 
 import pywikibot
 from pywikibot import pagegenerators
 import re
-import pywikibot.textlib
 import os
-from pywikibot.xmlreader import XmlDump
-#import requests
 import sys
-
-GIZRON = "גיזרון"
-MAKOR = "מקור"
-PARSHANIM = "פרשנים מפרשים"
-TSERUFIM = "צירופים"
-NIGZAROT = "נגזרות"
-NIRDAFOT = "מילים נרדפות"
-KROVIM = "ביטויים קרובים"
-NIGUDIM = "ניגודים"
-TERGUM = "תרגום"
-MEIDA = "מידע נוסף"
-REOGAM = "ראו גם"
-KISHURIM = "קישורים חיצוניים"
-SIMUCHIN = "סימוכין"
-SHULAIM = "הערות שוליים"
-
-
-titles_to_order = {
-
-    GIZRON : 0,
-    MAKOR  : 0,
-    PARSHANIM : 1,  
-    TSERUFIM :  2,
-    NIGZAROT : 3,
-    NIRDAFOT : 4,
-    KROVIM  : 4,
-    NIGUDIM : 5,
-    TERGUM : 6,
-    MEIDA : 7,
-    REOGAM : 8,
-    KISHURIM : 9,
-    SIMUCHIN : 10,
-    SHULAIM : 11,
-}
+import hewiktionary_constants
+from hewiktionary_constants import titles_to_order
 
 def split_parts(page_text):
     
@@ -101,6 +61,7 @@ def fix_part2(part_text):
 
     if re.compile('\n===[^=\n\r\v\f]+===[ \t]*[^\n]',re.MULTILINE).search(part_text):
         print('ERROR: a 3rd level title that do not end')
+        print(re.compile('\n===[^=\n\r\v\f]+===[ \t]*[^\n]',re.MULTILINE).findall(part_text))
         return original
 
     categories = re.findall("\[\[קטגוריה:[^\]]+\]\]",part_text,re.MULTILINE)
@@ -119,10 +80,7 @@ def fix_part2(part_text):
     if fields[0].startswith('='):
         print('PROBLEM 2: '+fields[0])
         return None
- 
-   # print('================== PART BEFORE FIX =================')
-    #print part_text
-    
+     
     tit = 1
     i = 1
     j = 0
@@ -204,7 +162,7 @@ def fix_page(page_title, page_text):
     
             final += [p]
         else:
-            print('=== PART ==='+part)
+
             if not part.startswith('\n') and not final[-1].endswith('\n') and not len(final) == 1:
                 final += ['\n'+part]
             else:
@@ -226,7 +184,7 @@ def main(args):
         m = re.compile('^-limit:([0-9]+)$').match(arg)
         a = re.compile('^-article:(.+)$').match(arg)
         if arg == '--get-dump':
-            get_dump()  # download the latest dump if it doesnt exist
+            get_dump()  # download the latest dump if it doesn't exist
         elif m:
             limit = int(m.group(1))
         elif a:
@@ -236,16 +194,13 @@ def main(args):
 
     local_args = pywikibot.handle_args(global_args)
 
-    #sys.exit(1)
 
     if article != '':
         page = pywikibot.Page(site, article)
-        t= page.text
+        t = page.text
         page.text = fix_page(page.title(),page.text)
 
         if page.text:
-            if (t == page.text):
-                print('ARE EQUAL!')
             page.save("בוט שמסדר סעיפים מדרגה 3 בסדר הנכון")
 
     else:
@@ -264,7 +219,6 @@ def main(args):
             else:
                 print('problem with page - skipping')
             l += 1
-            
     
     print('_____________________DONE____________________')
     
