@@ -68,14 +68,11 @@ def main(args):
     article = None
 
     for arg in args:
-
-        print(arg)
         m = re.compile('^-limit:([0-9]+)$').match(arg)
         a = re.compile('^-article:(.+)$').match(arg)
         if m:
             limit = int(m.group(1))
         elif a:
-            print('a')
             article = a.group(1)
         else:
             global_args.append(arg)

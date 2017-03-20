@@ -18,11 +18,6 @@ from pywikibot.xmlreader import XmlDump
 import sys
     
 class ShinToMakafBot(pywikibot.CurrentPageBot):
-    def __init__(self, **kwargs):
-        super(ShinToMakafBot,self).__init__(**kwargs)
-        self._pages_without_def = []
-        self._ktzarmarim = []
-        
 
     def treat_page(self):
 
