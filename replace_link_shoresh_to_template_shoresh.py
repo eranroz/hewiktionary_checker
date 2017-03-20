@@ -3,41 +3,33 @@
 r"""
 According to Ariel1024 :
 
-החלפה של: {{ש}}{{ש}}{{ש}}{{ש}} וכולי בסוף ערכים לתבנית {{-}}
+החלפה של "[[קטגוריה:פעל (שורש)]]" > "{{שורש|פעל}}" ("פעל" לדוגמה)
 
 see:
 
 https://he.wiktionary.org/w/index.php?title=%D7%A9%D7%99%D7%97%D7%AA_%D7%9E%D7%A9%D7%AA%D7%9E%D7%A9:Ariel1024&oldid=255275#.D7.94.D7.99
+
 """
 
 import pywikibot
 from pywikibot import pagegenerators
 import re
+import pywikibot.textlib
 import os
 from pywikibot.xmlreader import XmlDump
 import sys
-    
-class ShinToMakafBot(pywikibot.CurrentPageBot):
+
+class LinkShoreshToTemplateShoresh(pywikibot.CurrentPageBot):
     def __init__(self, **kwargs):
-        super(ShinToMakafBot,self).__init__(**kwargs)
-        self._pages_without_def = []
-        self._ktzarmarim = []
+        super(LinkShoreshToTemplateShoresh,self).__init__(**kwargs)
+        self._shoresh = u'שורש'
+        self._kategoria = u'קטגוריה'
         
-
     def treat_page(self):
-
-        s = re.compile(u'.*(שורש).*',re.MULTILINE).search(self.current_page.title())
-        if s is not None:
-            return 
-
-        s = re.compile(u'.*#הפניה.*',re.MULTILINE).search(self.current_page.text)
-        if s is not None:
-            return 
-
-        new_page_text = re.sub(u'(\{\{ש\}\}\n?){2,}','{{-}}\n',self.current_page.text,re.MULTILINE)
+        
+        new_page_text = re.sub(u'\[\['+self._kategoria+u':([^\]]*) \('+self._shoresh+u'\)\]\]',u'{{'+self._shoresh+r'|\1}}',self.current_page.text,re.MULTILINE)
         if new_page_text != self.current_page.text:
-            print('saving page %s' % self.current_page.title())
-            self.put_current(new_page_text, summary = u'בוט המחליף תבניות {{ש}} לתבנית {{-}} \u200f')           
+            self.put_current(new_page_text, summary = u'בוט המחליף לינק לשורש בתבנית שורש')           
         return
 
 def main(args):
@@ -47,7 +39,7 @@ def main(args):
 
     limit = 0
     article = ''
-
+    print(__file__+" סריקה עם בוט")
     
     for arg in args:
     
@@ -86,7 +78,7 @@ def main(args):
         #gen_factory.getCombinedGenerator()
         gen =  pagegenerators.AllpagesPageGenerator(site = site,total = limit)
 
-    bot = ShinToMakafBot(generator = gen,site = site)
+    bot = LinkShoreshToTemplateShoresh(generator = gen,site = site)
     bot.run()
 
 if __name__ == "__main__":
