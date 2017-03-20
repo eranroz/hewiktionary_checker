@@ -29,13 +29,10 @@ class TextBeforeDefChecker(Checker):
     def rule_break_found(self,page_title,text_title,text):
         before = re.compile("^([^=]*)==[^=]+==\s*",re.MULTILINE).search(text)
         if not before:
-#            print("TextBeforeDefChecker: not before:")
             return False
         text_before = before.group(1)
         if text_before != u'' and not re.compile("^\n*\{?").match(text_before):
             return True
-#        print("TextBeforeDefChecker: before: -%s-" % (before.group(0)))
-#        print("TextBeforeDefChecker: text_before: -%s-" % (text_before))
         return False
     
 class NoTitleChecker(Checker):
@@ -83,8 +80,8 @@ class NonAcronymWithGereshChecker(Checker):
             return True
         return False
 
-#########################
-class GershaimInMareMakom(pywikibot.CurrentPageBot):
+
+class GershaimInMareMakom(Checker):
     
     def __init__(self):
         super(GershaimInMareMakom,self).__init__()
@@ -100,7 +97,7 @@ class GershaimInMareMakom(pywikibot.CurrentPageBot):
                 if hewiktionary_constants.GERSHAIM_GERESH_REGEX.findall(parts[-1]) or hewiktionary_constants.GERSHAIM_GERESH_REGEX.findall(parts[-2]) or hewiktionary_constants.GERSHAIM_GERESH_REGEX.findall(parts[-3]):
                     return True
         return False
-#########################
+
 
 #classes that check by definition
             
@@ -135,6 +132,21 @@ class NoNikudInSecTitle(Checker):
                 if len(word)> 2 and  other_num == 0 and  he_num > 0 and nikud_num == 0:
                     return ['כותרת: %s' % text_title ]
 
+class ErechBetWrong:
+    
+    def rule_break_found(self,page_title,text_title,text):
+
+        erech_bet = re.compile(u'^([^=]+ [\u05d0-\u05d6][\'`"״\u0027]?\s*)$',re.MULTILINE).search(text_title)
+        if erech_bet:
+            print("found erech bet: %s" % text_title)
+            return ['ערך נוסף לא תיקני: %s ' % text_title]
+            
+
+        erech_bet = re.compile("^([^=]+ </?[Ss]>[\u05d0-\u05d4]</?[Ss]>)$",re.MULTILINE).search(text_title)
+        if erech_bet:
+            print("2 found erech bet: %s" % text_title)
+            return ['ערך נוסף לא תיקני: %s ' % text_title]
+           
 #classes that check by field:
 
 class InvalidFieldItemChecker(Checker):

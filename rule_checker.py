@@ -41,6 +41,7 @@ WARNING_TITLE_WITH_HTML_TAGS = 'דפים עם תגיות היפר-טקסט בכ�
 WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE = 'דפים בהם כותרת מסדר 2 ללא ניקוד שונה משם הדף'
 WARNING_NO_NIKUD_IN_SEC_TITLE  = 'דפים עם כותרת משנה לא מנוקדת'
 WARNING_GERSHAIM_IN_MARE_MAKOM = 'דפים עם ציטוט מהתנך עם גרשיים במראי מקום'
+WARNING_ERECH_BET_WRONG = 'ערך משני לא תיקני'
 
 warning_to_code = {
 
@@ -58,6 +59,7 @@ warning_to_code = {
     WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE  : "stdpt",
     WARNING_NO_NIKUD_IN_SEC_TITLE  : "nnst",
     WARNING_GERSHAIM_IN_MARE_MAKOM : "gmm",
+    WARNING_ERECH_BET_WRONG : "ebw",
 }
 
 warning_to_checker = {}
@@ -94,7 +96,7 @@ def fill_warning_to_item_checker(issues):
         warning_to_item_checker[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = checker.ItemTitleDiffPageTitle()
         warning_to_item_checker[WARNING_NO_NIKUD_IN_SEC_TITLE] = checker.NoNikudInSecTitle()
         warning_to_item_checker[WARNING_PAGE_WITHOUT_GREMMER_BOX] = checker.NoGremmerBoxChecker()
-
+        warning_to_item_checker[WARNING_ERECH_BET_WRONG] = checker.ErechBetWrong()
     else:
         if WARNING_2nd_LEVEL_TITLE_FROM_LIST in issues:
             warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()
@@ -109,6 +111,8 @@ def fill_warning_to_item_checker(issues):
 
         if WARNING_PAGE_WITHOUT_GREMMER_BOX in issues:
             warning_to_item_checker[WARNING_PAGE_WITHOUT_GREMMER_BOX] = checker.NoGremmerBoxChecker()
+        if WARNING_ERECH_BET_WRONG in issues:
+            warning_to_item_checker[WARNING_ERECH_BET_WRONG] = checker.ErechBetWrong()
                     
 warning_to_field_checker = {}
 
