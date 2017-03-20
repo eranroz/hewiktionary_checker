@@ -1,5 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+r"""
+In the Hebrew Wiktionary , the titles of sections of defintions must be from a determined list, the list is listed in hewiktionary_constants.py .
+This script replace the titles of the sctions to the right title name required
+"""
 
 from __future__ import unicode_literals
 import pywikibot
@@ -9,49 +13,30 @@ from pywikibot.bot import (
 from pywikibot.tools import issue_deprecation_warning
 
 import re
-import pywikibot.textlib
-import os
-import requests
 import sys
 import rule_checker
-
-GIZRON = "גיזרון"
-MAKOR = "מקור"
-PARSHANIM = "פרשנים מפרשים"
-TSERUFIM = "צירופים"
-NIGZAROT = "נגזרות"
-NIRDAFOT = "מילים נרדפות"
-KROVIM = "ביטויים קרובים"
-NIGUDIM = "ניגודים"
-TERGUM = "תרגום"
-MEIDA = "מידע נוסף"
-REOGAM = "ראו גם"
-KISHURIM = "קישורים חיצוניים"
-SIMUCHIN = "סימוכין"
-SHULAIM = "הערות שוליים"
-
+import hewiktionary_constants
 
 titles_replacer = {
 
-    "דעת פרשנים" : PARSHANIM,
-    "צרופים" :  TSERUFIM,
-    "ביטויים וצרופים" :  TSERUFIM,
-    "צירופים וביטויים" :  TSERUFIM,
-    "מילים קרובות" : NIRDAFOT,
-    "מלים נרדפות" : NIRDAFOT,
-    "נרדפות" : NIRDAFOT,
-    "מילים מנוגדות" : NIGUDIM,
-    "נגודים" : NIGUDIM,
-    "תרגומים" : TERGUM,
-    "תירגום" : TERGUM,
-    "תירגומים" : TERGUM,
-    "ראה גם" : REOGAM,
-    "הערת שוליים" : SHULAIM,
-    "הערות שוליים" : SHULAIM,
-    "קשורים חיצוניים" : KISHURIM,
-    "מקורות" : SIMUCHIN,
-    "גזרון" : GIZRON
-
+    "דעת פרשנים" : hewiktionary_constants.PARSHANIM,
+    "צרופים" :  hewiktionary_constants.TSERUFIM,
+    "ביטויים וצרופים" :  hewiktionary_constants.TSERUFIM,
+    "צירופים וביטויים" :  hewiktionary_constants.TSERUFIM,
+    "מילים קרובות" : hewiktionary_constants.NIRDAFOT,
+    "מלים נרדפות" : hewiktionary_constants.NIRDAFOT,
+    "נרדפות" : hewiktionary_constants.NIRDAFOT,
+    "מילים מנוגדות" : hewiktionary_constants.NIGUDIM,
+    "נגודים" : hewiktionary_constants.NIGUDIM,
+    "תרגומים" : hewiktionary_constants.TERGUM,
+    "תירגום" : hewiktionary_constants.TERGUM,
+    "תירגומים" : hewiktionary_constants.TERGUM,
+    "ראה גם" : hewiktionary_constants.REOGAM,
+    "הערת שוליים" : hewiktionary_constants.SHULAIM,
+    "הערות שוליים" : hewiktionary_constants.SHULAIM,
+    "קשורים חיצוניים" : hewiktionary_constants.KISHURIM,
+    "מקורות" : hewiktionary_constants.SIMUCHIN,
+    "גזרון" : hewiktionary_constants.GIZRON
 }
 
 class SectionTitleReplacerBot(pywikibot.CurrentPageBot):
