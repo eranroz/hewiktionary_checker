@@ -25,7 +25,7 @@ import requests
 import sys
 import checker
 import hewiktionary_constants
-
+from hewiktionary_constants import PAGE_TEXT_PART
 
 WARNING_PAGE_WITH_INVALID_FIELD = 'דפים עם סעיפים שאינם מהרשימה הסגורה'
 WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER = 'דפים עם סעיפים שאינם בסדר הנכון'
@@ -42,6 +42,7 @@ WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE = 'דפים בהם כותרת מסד
 WARNING_NO_NIKUD_IN_SEC_TITLE  = 'דפים עם כותרת משנה לא מנוקדת'
 WARNING_GERSHAIM_IN_MARE_MAKOM = 'דפים עם ציטוט מהתנך עם גרשיים במראי מקום'
 WARNING_ERECH_BET_WRONG = 'ערך משני לא תיקני'
+WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE = 'קצרמר בלי תבנית קצרמר'
 
 warning_to_code = {
 
@@ -60,6 +61,7 @@ warning_to_code = {
     WARNING_NO_NIKUD_IN_SEC_TITLE  : "nnst",
     WARNING_GERSHAIM_IN_MARE_MAKOM : "gmm",
     WARNING_ERECH_BET_WRONG : "ebw",
+    WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE : "kwkt"
 }
 
 warning_to_checker = {}
@@ -97,22 +99,25 @@ def fill_warning_to_item_checker(issues):
         warning_to_item_checker[WARNING_NO_NIKUD_IN_SEC_TITLE] = checker.NoNikudInSecTitle()
         warning_to_item_checker[WARNING_PAGE_WITHOUT_GREMMER_BOX] = checker.NoGremmerBoxChecker()
         warning_to_item_checker[WARNING_ERECH_BET_WRONG] = checker.ErechBetWrong()
+        warning_to_item_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
+        warning_to_item_checker[WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE] = checker.KtzarmarWithoutKtzarmarTemplate()
     else:
         if WARNING_2nd_LEVEL_TITLE_FROM_LIST in issues:
             warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()
-            
         if WARNING_TITLE_WITH_HTML_TAGS in issues:    
             warning_to_item_checker[WARNING_TITLE_WITH_HTML_TAGS] = checker.HtmlTagsInTitle()
-            
         if WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE in issues:
             warning_to_item_checker[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = checker.ItemTitleDiffPageTitle()
         if WARNING_NO_NIKUD_IN_SEC_TITLE in issues:
             warning_to_item_checker[WARNING_NO_NIKUD_IN_SEC_TITLE] = checker.NoNikudInSecTitle()
-
         if WARNING_PAGE_WITHOUT_GREMMER_BOX in issues:
             warning_to_item_checker[WARNING_PAGE_WITHOUT_GREMMER_BOX] = checker.NoGremmerBoxChecker()
         if WARNING_ERECH_BET_WRONG in issues:
             warning_to_item_checker[WARNING_ERECH_BET_WRONG] = checker.ErechBetWrong()
+        if WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER in issues:
+            warning_to_item_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
+        if WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE in issues:
+            warning_to_item_checker[WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE] = checker.KtzarmarWithoutKtzarmarTemplate()
                     
 warning_to_field_checker = {}
 
@@ -186,22 +191,19 @@ def check_part(page_title,title,part_text):
     warnings = {}
     
     for key, value in warning_to_item_checker.items():
-        v = value.rule_break_found(page_title,title,part_text)
+        v = value.rule_break_found(page_title,title,part_text,PAGE_TEXT_PART.WHOLE_ITEM)
         if v:
             if key not in warnings:
                 warnings[key] = []
             warnings[key] += v
             
     fields = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).findall(part_text)
-
-    for key, value in warning_to_field_checker.items():
-        value.reset_state()
         
     for f in fields:
         field_title =  re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
         
         for key, value in warning_to_field_checker.items():
-            v = value.rule_break_found(page_title,'',field_title)
+            v = value.rule_break_found(page_title,'',field_title,PAGE_TEXT_PART.SECTION_TITLE)
             if v:
                 if key not in warnings:
                     warnings[key] = []
@@ -223,6 +225,13 @@ def check_page(site, page_title, page_text):
     # the value of each enty is a list of strings , each string is a detailed description of what is wrong
     # if there is no need for detailed description and it is enough to put link to the page, the list will be empty
     warnings = {}
+
+    for key, value in warning_to_checker.items():
+        value.reset_state()
+    for key, value in warning_to_item_checker.items():
+        value.reset_state()
+    for key, value in warning_to_field_checker.items():
+        value.reset_state()
 
     if page_title.endswith('(שורש)'):
         return warnings
@@ -279,7 +288,7 @@ def main(args):
     local_args = pywikibot.handle_args(global_args)
         
     if article != u'':
-        gen = (pywikibot.Page(site, article.decode('utf-8')) for i in range(0,1))
+        gen = (pywikibot.Page(site, article) for i in range(0,1))
         gen = pagegenerators.PreloadingGenerator(gen)
     elif os.path.exists('pages-articles.xml.bz2'):
         print('parsing dump')

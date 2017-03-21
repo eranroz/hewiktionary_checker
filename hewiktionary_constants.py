@@ -43,3 +43,9 @@ titles_to_order = {
 }
 
 titles_list  = list(titles_to_order.keys())
+
+class PAGE_TEXT_PART:
+    WHOLE_PAGE = 1
+    WHOLE_ITEM = 2
+    SECTION_TITLE = 3
+

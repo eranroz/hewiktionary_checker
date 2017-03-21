@@ -1,4 +1,5 @@
 import hewiktionary_constants
+from hewiktionary_constants import PAGE_TEXT_PART
 import pywikibot
 import re
 import pywikibot.textlib
@@ -8,7 +9,7 @@ class Checker:
     def __init__(self):
         self._site = pywikibot.Site('he', 'wiktionary')
         return
-    def rule_break_found(self,page_title,text_title,text):
+    def rule_break_found(self,page_title,text_title,text,text_portion):
         """check given text and return "true" (problem found) or "false" (no problem)"""
         raise NotImplementedError('Method %s.rule_break_found() not implemented.'
                                   % self.__class__.__name__)
@@ -16,7 +17,7 @@ class Checker:
         return
 
 class FirstLevelTitleChecker(Checker):
-    def rule_break_found(self,page_title,text_title,text):
+    def rule_break_found(self,page_title,text_title,text,text_portion):
         # look for any string '= x =' where x either:
         # starts with '=' but doesn't ends with '='
         # strats with anyhting but '=' and ends with '='
@@ -26,7 +27,7 @@ class FirstLevelTitleChecker(Checker):
         return False
 
 class TextBeforeDefChecker(Checker):
-    def rule_break_found(self,page_title,text_title,text):
+    def rule_break_found(self,page_title,text_title,text,text_portion):
         before = re.compile("^([^=]*)==[^=]+==\s*",re.MULTILINE).search(text)
         if not before:
             return False
@@ -36,14 +37,14 @@ class TextBeforeDefChecker(Checker):
         return False
     
 class NoTitleChecker(Checker):
-    def rule_break_found(self,page_title,text_title,text):
+    def rule_break_found(self,page_title,text_title,text,text_portion):
         text_before = re.compile("^==[^=]+==\s*$",re.MULTILINE).search(text)
         if not text_before:
             return True
         return False
         
 class NoGremmerBoxChecker(Checker):
-    def rule_break_found(self,page_title,text_title,text):
+    def rule_break_found(self,page_title,text_title,text,text_portion):
         
         if hewiktionary_constants.KATEGORIA_PITGAMI_REGEX.search(text) or text.endswith("'"):
             return ''
@@ -59,7 +60,7 @@ class NoGremmerBoxChecker(Checker):
             return ['אין טבלת ניתוח דקדוקי %s' % text_title]
         
 class AcronymWithoutGereshChecker(Checker):
-    def rule_break_found(self,page_title,text_title,text):
+    def rule_break_found(self,page_title,text_title,text,text_portion):
         try:
             text_categories = [cat.title(withNamespace=False) for cat in pywikibot.textlib.getCategoryLinks(text, self._site)]
         except pywikibot.InvalidTitle:
@@ -70,7 +71,7 @@ class AcronymWithoutGereshChecker(Checker):
         return False
     
 class NonAcronymWithGereshChecker(Checker):
-    def rule_break_found(self,page_title,text_title,text):
+    def rule_break_found(self,page_title,text_title,text,text_portion):
         try:
             text_categories = [cat.title(withNamespace=False) for cat in pywikibot.textlib.getCategoryLinks(text, self._site)]
         except pywikibot.InvalidTitle:
@@ -88,7 +89,7 @@ class GershaimInMareMakom(Checker):
         self._tsat = u'צט'
         self._tanah = u'תנ"ך'
         
-    def rule_break_found(self,page_title,text_title,text):
+    def rule_break_found(self,page_title,text_title,text,text_portion):
         tsitutim = re.findall(u'\{\{'+self._tsat+u'/'+self._tanah+u'([^{}]*)\}\}',text,re.MULTILINE)
         if tsitutim:
             for tsitut in tsitutim:
@@ -102,19 +103,19 @@ class GershaimInMareMakom(Checker):
 #classes that check by definition
             
 class SecondLevelTitleField(Checker):
-    def rule_break_found(self,page_title,text_title,text):
+    def rule_break_found(self,page_title,text_title,text,text_portion):
         if text_title in hewiktionary_constants.titles_list:
             return ['סעיף עם כתורת מסדר 2: %s' % text_title]
         return ''
     
 class HtmlTagsInTitle(Checker):
-        def rule_break_found(self,page_title,text_title,text):
+        def rule_break_found(self,page_title,text_title,text,text_portion):
             if '<' in text_title:
                 return ['%s' % text_title]
             return False
         
 class ItemTitleDiffPageTitle(Checker):
-        def rule_break_found(self,page_title,text_title,text):
+        def rule_break_found(self,page_title,text_title,text,text_portion):
             real_title = re.compile('([^\{\}\)\(]*)(\{\{.*\}\})?(\(.*\))?').search(text_title).group(1).strip()
             no_nikud_title = re.sub('[\u0591-\u05c7\u200f]','',real_title)
             no_nikud_title = re.sub('[״]','"',no_nikud_title)
@@ -123,7 +124,7 @@ class ItemTitleDiffPageTitle(Checker):
             return ''
 
 class NoNikudInSecTitle(Checker):
-        def rule_break_found(self,page_title,text_title,text):
+        def rule_break_found(self,page_title,text_title,text,text_portion):
             words_in_title =  re.compile('[\s]+').split(text_title)
             for word in words_in_title:
                 nikud_num  = len(re.findall(u'[\u05b0-\u05bc]',word))
@@ -134,7 +135,7 @@ class NoNikudInSecTitle(Checker):
 
 class ErechBetWrong:
     
-    def rule_break_found(self,page_title,text_title,text):
+    def rule_break_found(self,page_title,text_title,text,text_portion):
 
         erech_bet = re.compile(u'^([^=]+ [\u05d0-\u05d6][\'`"״\u0027]?\s*)$',re.MULTILINE).search(text_title)
         if erech_bet:
@@ -150,7 +151,7 @@ class ErechBetWrong:
 #classes that check by field:
 
 class InvalidFieldItemChecker(Checker):
-    def rule_break_found(self,page_title,text_title,text):
+    def rule_break_found(self,page_title,text_title,text,text_portion):
             if text not in hewiktionary_constants.titles_to_order:
                 return ['סעיף שאינו מהרשימה: %s' % text]
 
@@ -166,7 +167,10 @@ class InvalidFieldOrderItemChecker(Checker):
         self._last_match = ''
         
         
-    def rule_break_found(self,page_title,text_title,text):
+    def rule_break_found(self,page_title,text_title,text,text_portion):
+        if text_portion == PAGE_TEXT_PART.WHOLE_PAGE or text_portion == PAGE_TEXT_PART.WHOLE_ITEM:
+            self.reset_state()
+            return []
         if text not in hewiktionary_constants.titles_to_order:
             return []
         new_state = hewiktionary_constants.titles_to_order[text]
@@ -176,3 +180,33 @@ class InvalidFieldOrderItemChecker(Checker):
             self._state = new_state
             self._last_match = text
 
+class KtzarmarWithoutKtzarmarTemplate(Checker):
+    def __init__(self):
+        super(KtzarmarWithoutKtzarmarTemplate,self).__init__()
+
+    def rule_break_found(self,page_title,text_title,text,text_portion):
+        
+        if re.compile(u'.*{{קצרמר}}.*',re.MULTILINE).search(text) is not None:
+            return []
+
+        #see http://stackoverflow.com/questions/19142042/python-regex-to-get-everything-until-the-first-dot-in-a-string
+        # need the "?" so the regex won't be greedy
+        #hagdarot = re.compile(u"^(.*?)===[^=]+===\s*\n",re.MULTILINE).search(text)
+
+        sections = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).split(text)
+        
+        hagdarot = sections.pop(0)
+        hagdara = re.compile("^#[^:]",re.MULTILINE).search(hagdarot)
+        
+        if not hagdara:
+            print("found no hagdara %s" % text_title)
+            return ['(אין הגדרות) %s' % text_title]
+        
+        sec_titles = sections[0::2]
+        sec_no_reo_gam = [s for s in sec_titles if hewiktionary_constants.REOGAM not in s]
+
+        if len(sec_no_reo_gam) < 2:
+            #print("found less than 2 sections %s" % text_title)
+            return ['(פחות משני סעיפים (לא כולל ראו גם)) %s' % text_title]
+
+        return []
