@@ -4,7 +4,6 @@ import pywikibot
 import re
 import pywikibot.textlib
 
-
 class Checker:
     def __init__(self):
         self._site = pywikibot.Site('he', 'wiktionary')
@@ -180,6 +179,7 @@ class InvalidFieldOrderItemChecker(Checker):
             self._state = new_state
             self._last_match = text
 
+# a ktzarmar is an item that either has no definition or has less than two section (not including "reo gam")
 class KtzarmarWithoutKtzarmarTemplate(Checker):
     def __init__(self):
         super(KtzarmarWithoutKtzarmarTemplate,self).__init__()

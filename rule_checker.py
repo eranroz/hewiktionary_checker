@@ -91,6 +91,12 @@ def fill_warning_to_checker(issues):
 
 warning_to_item_checker = {}
 
+
+# In wikimilon we might more than one entry in each dictionary value.
+# This is because there might be different words that pronounced differently but are written the same.
+# the checkers in this list need to get the parsed pages to the word entry , so not the text of the whole page but
+# only on the entry level.
+
 def fill_warning_to_item_checker(issues):
     if len(issues) == 0:
         warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()

@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 r"""
-This bot sort the fields (sections) of a definition according to the predetermined order decided by the hebrew wiktionary community
+This bot sorts the fields (sections) of a definition according to the predetermined order decided by the hebrew wiktionary community
 The order is represeted by the constant titles_to_order defined in hewiktionary_constants.py
+It goes over the list of links in  "ויקימילון:תחזוקה/דפים_עם_סעיפים_שאינם_בסדר_הנכון"
 
 """
 

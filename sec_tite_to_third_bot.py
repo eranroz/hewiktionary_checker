@@ -1,3 +1,4 @@
+
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -19,17 +20,20 @@ class SectionTitleLvl2ndTo3rdBot(pywikibot.CurrentPageBot):
         """Load the given page, do some changes, and save it."""
         new_page_text = self.current_page.text
 
-        part_titles = re.findall("^ *\t*== *\t*[^=]+ *\t*== *\t*$",self.current_page.text,re.MULTILINE)
+        
+        part_titles = re.findall("^==[^=\n]+==[ \r\t]*$",self.current_page.text,re.MULTILINE)
+        
         for part_title in part_titles:
 
 
             title = re.compile("==\s*([^=]+)\s*==").search(part_title).group(1).strip()
             if title in hewiktionary_constants.titles_list:
-                new_page_text = re.sub('\s==\s*'+title+'\s*==\s','\n==='+title+'===\n',new_page_text,re.MULTILINE)
+                new_page_text = re.sub('==\s*'+title+'\s*==','==='+title+'===',new_page_text,re.MULTILINE)
+            
 
-            if new_page_text != self.current_page.text:
-                print('saving %s' % self.current_page.title())
-                self.put_current(new_page_text, summary = u'בוט המחליף כותרות סעיפים מסדר 2 לסדר 3')
+        if new_page_text != self.current_page.text:
+            print('saving %s' % self.current_page.title())
+            self.put_current(new_page_text, summary = u'בוט המחליף כותרות סעיפים מסדר 2 לסדר 3')
 
 def main(args):
     
@@ -54,7 +58,7 @@ def main(args):
     local_args = pywikibot.handle_args(global_args)
 
     if article:
-        gen = [pywikibot.Page(site, article.decode('utf-8'))]
+        gen = [pywikibot.Page(site, article)]
         gen = pagegenerators.PreloadingGenerator(gen)
     else:
         gen = pagegenerators.LinkedPageGenerator(maintain_page,total = limit, content = True)
