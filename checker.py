@@ -165,7 +165,7 @@ class InvalidFieldOrderItemChecker(Checker):
         self._state = -1
         self._last_match = ''
         
-        
+    r"text variable is the title of the field without the '=' sign "
     def rule_break_found(self,page_title,text_title,text,text_portion):
         if text_portion == PAGE_TEXT_PART.WHOLE_PAGE or text_portion == PAGE_TEXT_PART.WHOLE_ITEM:
             self.reset_state()
@@ -179,6 +179,27 @@ class InvalidFieldOrderItemChecker(Checker):
             self._state = new_state
             self._last_match = text
 
+class HomonimimSeperated(Checker):
+    def __init__(self):
+        super(HomonimimSeperated,self).__init__()
+        self.reset_state()
+
+    def reset_state(self):
+        self._titles = []
+
+    #v = value.rule_break_found(page_title,title,part_text,PAGE_TEXT_PART.WHOLE_ITEM)
+    def rule_break_found(self,page_title,text_title,text,text_portion):
+        tmp_title = re.sub('{{[^{}]*}}','',text_title,2).strip()
+        #tmp_title = re.sub('{{','',text_title,2)
+        #if(tmp_title != text_title):
+        #    print("CHANGED %s =>%s"%(tmp_title,text_title))
+        #print(tmp_title)
+        reg = re.compile(u'([^)(]+)\s*\(גם: ([^)(]+)\)\s*').search(tmp_title)
+        if(reg):
+            print("found gam title1: %s" % reg.group(1).strip())
+            print("found gam title2: %s" % reg.group(2).strip())
+        
+            
 # a ktzarmar is an item that either has no definition or has less than two section (not including "reo gam")
 class KtzarmarWithoutKtzarmarTemplate(Checker):
     def __init__(self):

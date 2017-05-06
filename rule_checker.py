@@ -43,7 +43,7 @@ WARNING_NO_NIKUD_IN_SEC_TITLE  = 'דפים עם כותרת משנה לא מנו�
 WARNING_GERSHAIM_IN_MARE_MAKOM = 'דפים עם ציטוט מהתנך עם גרשיים במראי מקום'
 WARNING_ERECH_BET_WRONG = 'ערך משני לא תיקני'
 WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE = 'קצרמר בלי תבנית קצרמר'
-
+WARNING_SEPARATED_HOMONIMIM = 'הומונימים מופרדים'
 warning_to_code = {
 
     WARNING_PAGE_WITH_INVALID_FIELD : "if",
@@ -61,7 +61,8 @@ warning_to_code = {
     WARNING_NO_NIKUD_IN_SEC_TITLE  : "nnst",
     WARNING_GERSHAIM_IN_MARE_MAKOM : "gmm",
     WARNING_ERECH_BET_WRONG : "ebw",
-    WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE : "kwkt"
+    WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE : "kwkt",
+    WARNING_SEPARATED_HOMONIMIM : "sh"
 }
 
 warning_to_checker = {}
@@ -107,6 +108,7 @@ def fill_warning_to_item_checker(issues):
         warning_to_item_checker[WARNING_ERECH_BET_WRONG] = checker.ErechBetWrong()
         warning_to_item_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
         warning_to_item_checker[WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE] = checker.KtzarmarWithoutKtzarmarTemplate()
+        warning_to_item_checker[WARNING_SEPARATED_HOMONIMIM] = checker.HomominimSeperated()
     else:
         if WARNING_2nd_LEVEL_TITLE_FROM_LIST in issues:
             warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()
@@ -124,6 +126,8 @@ def fill_warning_to_item_checker(issues):
             warning_to_item_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
         if WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE in issues:
             warning_to_item_checker[WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE] = checker.KtzarmarWithoutKtzarmarTemplate()
+        if WARNING_SEPARATED_HOMONIMIM in issues:
+            warning_to_item_checker[WARNING_SEPARATED_HOMONIMIM] = checker.HomonimimSeperated()
                     
 warning_to_field_checker = {}
 
