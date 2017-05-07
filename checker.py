@@ -190,15 +190,28 @@ class HomonimimSeperated(Checker):
     #v = value.rule_break_found(page_title,title,part_text,PAGE_TEXT_PART.WHOLE_ITEM)
     def rule_break_found(self,page_title,text_title,text,text_portion):
         tmp_title = re.sub('{{[^{}]*}}','',text_title,2).strip()
-        #tmp_title = re.sub('{{','',text_title,2)
-        #if(tmp_title != text_title):
-        #    print("CHANGED %s =>%s"%(tmp_title,text_title))
-        #print(tmp_title)
+        if "<" in tmp_title or ">" in tmp_title:
+            return []
         reg = re.compile(u'([^)(]+)\s*\(גם: ([^)(]+)\)\s*').search(tmp_title)
+        trim_title = []
         if(reg):
-            print("found gam title1: %s" % reg.group(1).strip())
-            print("found gam title2: %s" % reg.group(2).strip())
+            trim_title = reg.group(1).strip()
+        else:
+            trim_title = tmp_title
+
+        if len(self._titles) > 0 and trim_title != self._titles[-1]:
+            i = 0
+            while(i<len(self._titles)-1):
+                if trim_title == self._titles[i]:
+                    #print("found seperation t=  #%s#, #%s#" % (self._titles[i],self._titles[i].encode()))
+                    self._titles.append(trim_title)
+                    return ["ההומונים %s מופרד" % trim_title]
+                i = i+1
         
+        self._titles.append(trim_title)
+        return []                
+                        
+
             
 # a ktzarmar is an item that either has no definition or has less than two section (not including "reo gam")
 class KtzarmarWithoutKtzarmarTemplate(Checker):
