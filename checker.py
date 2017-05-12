@@ -132,7 +132,7 @@ class NoNikudInSecTitle(Checker):
                 if len(word)> 2 and  other_num == 0 and  he_num > 0 and nikud_num == 0:
                     return ['כותרת: %s' % text_title ]
 
-class ErechBetWrong:
+class ErechBetWrong(Checker):
     
     def rule_break_found(self,page_title,text_title,text,text_portion):
 
@@ -179,6 +179,7 @@ class InvalidFieldOrderItemChecker(Checker):
             self._state = new_state
             self._last_match = text
 
+      #HomoninimSeperated()
 class HomonimimSeperated(Checker):
     def __init__(self):
         super(HomonimimSeperated,self).__init__()

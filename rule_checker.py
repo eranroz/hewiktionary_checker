@@ -44,6 +44,8 @@ WARNING_GERSHAIM_IN_MARE_MAKOM = 'דפים עם ציטוט מהתנך עם גר�
 WARNING_ERECH_BET_WRONG = 'ערך משני לא תיקני'
 WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE = 'קצרמר בלי תבנית קצרמר'
 WARNING_SEPARATED_HOMONIMIM = 'הומונימים מופרדים'
+WARNING_ = 'בעלי חיים וצמחים ללא תמונות'
+
 warning_to_code = {
 
     WARNING_PAGE_WITH_INVALID_FIELD : "if",
@@ -108,7 +110,7 @@ def fill_warning_to_item_checker(issues):
         warning_to_item_checker[WARNING_ERECH_BET_WRONG] = checker.ErechBetWrong()
         warning_to_item_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
         warning_to_item_checker[WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE] = checker.KtzarmarWithoutKtzarmarTemplate()
-        warning_to_item_checker[WARNING_SEPARATED_HOMONIMIM] = checker.HomominimSeperated()
+        warning_to_item_checker[WARNING_SEPARATED_HOMONIMIM] = checker.HomonimimSeperated()
     else:
         if WARNING_2nd_LEVEL_TITLE_FROM_LIST in issues:
             warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()
@@ -247,7 +249,7 @@ def check_page(site, page_title, page_text):
         return warnings
 
     for key, value in warning_to_checker.items():
-        if value.rule_break_found(page_title,'',page_text):
+        if value.rule_break_found(page_title,'',page_text,PAGE_TEXT_PART.WHOLE_PAGE):
             warnings[key] = []
          
     parts_gen = split_parts(page_text)
