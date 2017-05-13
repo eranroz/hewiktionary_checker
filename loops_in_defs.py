@@ -97,14 +97,13 @@ def check_loop(orig_page,dest_page):
             
 
 
-        
+    #print(dest_page)
     parts = re.compile("(^==[^=]+==\s*\n)",re.MULTILINE).split(dest_page_text)
     for part in parts:
         sections = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).split(part)
         hagdara_sec = sections.pop(0)
         for defi in re.compile("^#([^:].*)$",re.MULTILINE).findall(hagdara_sec):
             words = re.compile("[ ,\.]+").split(defi.strip())
-            #print(words)
             for word in words:
                 word = word.strip();
                 word_n = re.compile('[^\[\]]*[\[\]]{2}([^\[\]]*)[\[\]]{2}').match(word)
@@ -114,8 +113,8 @@ def check_loop(orig_page,dest_page):
                     if w:
                         word = w.group(1)
                         
-            if word == orig_page:
-                print("-----found a loop:%s - dest_page = %s"%(word,dest_page))
+                if word == orig_page:
+                    print("-----found a loop:%s - dest_page = %s"%(word,dest_page))
 
                     
 def check_part(page_title,title,part_text):
@@ -145,8 +144,9 @@ def check_part(page_title,title,part_text):
                 w = re.compile('^([^|]*)\|').search(word)
                 if w:
                     word = w.group(1)
-                    #print(word)
+                #print(word)
             word = word.strip();
+            #print(word)
             if '[' in word or ']' in word:
                 print("bad word:%s in page %s" % (word,page_title))
                 continue
@@ -160,14 +160,14 @@ def check_part(page_title,title,part_text):
                 continue
 
             page = pywikibot.Page(site,word)
-
+            #print(word)
             try:
                 if page.pageid != 0:                
                     if hibur_cat_p not in page.categories() and yahas_cat_p not in page.categories():
                         #print(word)
                         check_loop(page_title,word)
             except:
-                return
+                continue
             
     
 def check_page(site, page_title, page_text):
