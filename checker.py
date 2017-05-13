@@ -224,6 +224,9 @@ class KtzarmarWithoutKtzarmarTemplate(Checker):
         if re.compile(u'.*{{קצרמר}}.*',re.MULTILINE).search(text) is not None:
             return []
 
+        if re.compile(u'[a-zA-Z"]').search(page_title):
+            return []
+        
         #see http://stackoverflow.com/questions/19142042/python-regex-to-get-everything-until-the-first-dot-in-a-string
         # need the "?" so the regex won't be greedy
         #hagdarot = re.compile(u"^(.*?)===[^=]+===\s*\n",re.MULTILINE).search(text)
@@ -234,7 +237,7 @@ class KtzarmarWithoutKtzarmarTemplate(Checker):
         hagdara = re.compile("^#[^:]",re.MULTILINE).search(hagdarot)
         
         if not hagdara:
-            print("found no hagdara %s" % text_title)
+            #print("found no hagdara %s" % text_title)
             return ['(אין הגדרות) %s' % text_title]
         
         sec_titles = sections[0::2]
