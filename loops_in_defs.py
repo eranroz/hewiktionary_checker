@@ -85,7 +85,7 @@ def split_parts(page_text):
 
 
 
-def check_loop(orig_page,dest_page):
+def check_loop(orig_page,dest_page,orig_parag):
 
     site = pywikibot.Site('he', 'wiktionary')
     dest_page_p = pywikibot.Page(site,dest_page)
@@ -95,8 +95,6 @@ def check_loop(orig_page,dest_page):
     except pywikibot.IsRedirectPage:
         return 
             
-
-
     #print(dest_page)
     parts = re.compile("(^==[^=]+==\s*\n)",re.MULTILINE).split(dest_page_text)
     for part in parts:
@@ -115,6 +113,7 @@ def check_loop(orig_page,dest_page):
                         
                 if word == orig_page:
                     print("-----found a loop:%s - dest_page = %s"%(word,dest_page))
+                    print("orig paragraph:\n%s\ndest paragraph:\n%s\n"%(orig_parag,defi))
 
                     
 def check_part(page_title,title,part_text):
@@ -124,10 +123,8 @@ def check_part(page_title,title,part_text):
 
     hibur_cat = u'קטגוריה:מילות חיבור'
     yahas_cat = u'קטגוריה:מילות יחס'
-
     hibur_cat_p = pywikibot.Page(site,hibur_cat)
     yahas_cat_p = pywikibot.Page(site,yahas_cat)
-
 
     hagdara_sec = sections.pop(0)
     for defi in re.compile("^#([^:].*)$",re.MULTILINE).findall(hagdara_sec):
@@ -147,15 +144,8 @@ def check_part(page_title,title,part_text):
                 #print(word)
             word = word.strip();
             #print(word)
-            if '[' in word or ']' in word:
+            if re.compile('[\[\]\{\}><]').search(word):
                 print("bad word:%s in page %s" % (word,page_title))
-                continue
-            if '{' in word or '}' in word:
-                print("bad word:%s in page %s" % (word,page_title))
-                continue
-            if '<' in word or '>' in word:
-                print("bad word:%s in page %s" % (word,page_title))
-                continue
             if len(word)==0:
                 continue
 
@@ -165,7 +155,7 @@ def check_part(page_title,title,part_text):
                 if page.pageid != 0:                
                     if hibur_cat_p not in page.categories() and yahas_cat_p not in page.categories():
                         #print(word)
-                        check_loop(page_title,word)
+                        check_loop(page_title,word,defi)
             except:
                 continue
             
