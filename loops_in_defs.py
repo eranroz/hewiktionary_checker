@@ -112,8 +112,9 @@ def check_loop(orig_page,dest_page,orig_parag):
                         word = w.group(1)
                         
                 if word == orig_page:
-                    print("-----found a loop:%s - dest_page = %s"%(word,dest_page))
-                    print("orig paragraph:\n%s\ndest paragraph:\n%s\n"%(orig_parag,defi))
+                    print("found loop page1=%s page2=%s"%(orig_page,dest_page))
+                    print("page %s:\n%s"%(orig_page,re.sub(dest_page,'<b>'+dest_page+'</b>',orig_parag)))
+                    print("page %s:\n%s"%(dest_page,re.sub(orig_page,'<b>'+orig_page+'</b>',defi)))
 
                     
 def check_part(page_title,title,part_text):
@@ -144,9 +145,8 @@ def check_part(page_title,title,part_text):
                 #print(word)
             word = word.strip();
             #print(word)
-            if re.compile('[\[\]\{\}><]').search(word):
-                print("bad word:%s in page %s" % (word,page_title))
-            if len(word)==0:
+            if re.compile('[\[\]\{\}><]').search(word) or len(word)==0 or word==page_title:
+                #print("bad word:%s in page %s" % (word,page_title))
                 continue
 
             page = pywikibot.Page(site,word)
@@ -156,6 +156,8 @@ def check_part(page_title,title,part_text):
                     if hibur_cat_p not in page.categories() and yahas_cat_p not in page.categories():
                         #print(word)
                         check_loop(page_title,word,defi)
+            except KeyboardInterrupt: 
+                sys.exit()
             except:
                 continue
             
@@ -188,14 +190,19 @@ def main(args):
 
     limit = -1
     article = ''
-
+    from_article = ''
     for arg in args:
         m = re.compile('^-limit:([0-9]+)$').match(arg)
         a = re.compile('^-article:(.+)$').match(arg)
+        f = re.compile('^-from-article:(.+)$').match(arg)
+
         if arg == '--get-dump':
             get_dump()  # download the latest dump if it doesnt exist
-        elif m:
-            limit = int(m.group(1))
+        elif m or f:
+            if m:
+                limit = int(m.group(1))
+            if f:
+                from_article = f.group(1)
         elif a:
             article = a.group(1)
         else:
@@ -206,7 +213,7 @@ def main(args):
     if article != u'':
         gen = (pywikibot.Page(site, article) for i in range(0,1))
         gen = pagegenerators.PreloadingGenerator(gen)
-    elif os.path.exists('pages-articles.xml.bz2'):
+    elif os.path.exists('pages-articles.xml.bz2') and from_article == '':
         print('parsing dump')
         all_wiktionary = XmlDump('pages-articles.xml.bz2').parse()  # open the dump and parse it.
         print('end parsing dump')
@@ -220,10 +227,14 @@ def main(args):
         print('Not using dump - use get_dump to download dump file or run with comment lise arguments')
         #gen_factory = pagegenerators.GeneratorFactory(site,'-ns:1')
         #gen_factory.getCombinedGenerator()
-        gen =  pagegenerators.AllpagesPageGenerator(site = site)
+        if from_article != '':
+            gen =  pagegenerators.AllpagesPageGenerator(start = from_article , site = site)
+        else:
+            gen =  pagegenerators.AllpagesPageGenerator(site = site)
 
     
     for page in gen:
+        print(page.title())
         if limit == 0:
             break
         elif limit > 0:
