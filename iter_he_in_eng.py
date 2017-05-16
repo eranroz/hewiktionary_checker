@@ -98,7 +98,7 @@ def main(args):
         if from_article != '':
             gen =  pagegenerators.AllpagesPageGenerator(start = from_article , site = site)
         else:
-            gen =  pagegenerators.AllpagesPageGenerator(site = site)
+            gen =  pagegenerators.AllpagesPageGenerator(start = 'א',site = site)
 
     hesite = pywikibot.Site('he', 'wiktionary')
     list = []
