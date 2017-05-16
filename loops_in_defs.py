@@ -112,14 +112,18 @@ def check_loop(orig_page,dest_page,orig_parag):
                         word = w.group(1)
                         
                 if word == orig_page:
-                    print("found loop page1=%s page2=%s"%(orig_page,dest_page))
+                    print("found loop page1=[[%s]] page2=[[%s]]"%(orig_page,dest_page))
                     print("page %s:\n%s"%(orig_page,re.sub(dest_page,'<b>'+dest_page+'</b>',orig_parag)))
                     print("page %s:\n%s"%(dest_page,re.sub(orig_page,'<b>'+orig_page+'</b>',defi)))
 
                     
 def check_part(page_title,title,part_text):
-
-    sections = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).split(part_text)
+    try:
+        sections = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).split(part_text)
+    except:
+        print("Unexpected error:", sys.exc_info()[0])
+        return
+    
     site = pywikibot.Site('he', 'wiktionary')
 
     hibur_cat = u'קטגוריה:מילות חיבור'
