@@ -104,7 +104,8 @@ def main(args):
     list = []
     #f = open('workfile', 'w')
     for page in gen:
-        if len(page.title())==1 :
+        loop = (loop+1)%100
+        if len(page.title())==1 or loop == 0:
             print(page.title())
         if(page.title()=='תתרנית'):
             break

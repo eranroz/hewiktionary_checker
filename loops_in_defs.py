@@ -27,7 +27,7 @@ import checker
 import hewiktionary_constants
 from hewiktionary_constants import PAGE_TEXT_PART
 
-            
+fsas = ''            
 def get_dump():
     """
     This function downloads teh latest wiktionary dump
@@ -87,6 +87,7 @@ def split_parts(page_text):
 
 def check_loop(orig_page,dest_page,orig_parag):
 
+    global fsas
     site = pywikibot.Site('he', 'wiktionary')
     dest_page_p = pywikibot.Page(site,dest_page)
 
@@ -112,10 +113,10 @@ def check_loop(orig_page,dest_page,orig_parag):
                         word = w.group(1)
                         
                 if word == orig_page:
-                    print("found loop page1=[[%s]] page2=[[%s]]"%(orig_page,dest_page))
-                    print("page %s:\n%s"%(orig_page,re.sub(dest_page,'<b>'+dest_page+'</b>',orig_parag)))
-                    print("page %s:\n%s"%(dest_page,re.sub(orig_page,'<b>'+orig_page+'</b>',defi)))
-
+                    fsas.write("* found loop page1=[[%s]] page2=[[%s]]\n"%(orig_page,dest_page))
+                    fsas.write("# page1 [[%s]]:\n%s\n"%(orig_page,re.sub(dest_page,'<b>'+dest_page+'</b>',orig_parag)))
+                    fsas.write("# page2 [[%s]]:\n%s\n"%(dest_page,re.sub(orig_page,'<b>'+orig_page+'</b>',defi)))
+                    
                     
 def check_part(page_title,title,part_text):
     try:
@@ -132,6 +133,7 @@ def check_part(page_title,title,part_text):
     yahas_cat_p = pywikibot.Page(site,yahas_cat)
 
     hagdara_sec = sections.pop(0)
+    
     for defi in re.compile("^#([^:].*)$",re.MULTILINE).findall(hagdara_sec):
         words = re.compile("[ ,\.]+").split(defi.strip())
         #print(words)
@@ -164,7 +166,7 @@ def check_part(page_title,title,part_text):
                 sys.exit()
             except:
                 continue
-            
+    
     
 def check_page(site, page_title, page_text):
     """
@@ -188,7 +190,8 @@ def check_page(site, page_title, page_text):
 
 
 def main(args):
-    
+
+    global fsas
     site = pywikibot.Site('he', 'wiktionary')
     global_args  = []
 
@@ -236,7 +239,8 @@ def main(args):
         else:
             gen =  pagegenerators.AllpagesPageGenerator(site = site)
 
-    
+    fsas = open('file.txt', 'w',500)
+
     for page in gen:
         print(page.title())
         if limit == 0:
@@ -245,6 +249,6 @@ def main(args):
             limit = limit -1
         
         check_page(site, page.title(), page.get())
-
+    fsas.close()
 if __name__ == "__main__":
     main(sys.argv)
