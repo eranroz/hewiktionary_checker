@@ -156,8 +156,9 @@ def check_part(page_title,title,part_text):
             except UnicodeDecodeError:
                 print("UnicodeDecodeError in page %s: %s"%(word, e.strerror))
                 print(word)
+                continue
                 
-            if page.pageid != 0:                
+            if page.exists():
                 if hibur_cat_p not in page.categories() and yahas_cat_p not in page.categories():
                       #print(word)
                       check_loop(page_title,word,defi)
