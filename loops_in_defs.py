@@ -119,11 +119,8 @@ def check_loop(orig_page,dest_page,orig_parag):
                     
                     
 def check_part(page_title,title,part_text):
-    try:
-        sections = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).split(part_text)
-    except:
-        print("Unexpected error:", sys.exc_info()[0])
-        return
+    
+    sections = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).split(part_text)
     
     site = pywikibot.Site('he', 'wiktionary')
 
@@ -154,18 +151,16 @@ def check_part(page_title,title,part_text):
             if re.compile('[\[\]\{\}><]').search(word) or len(word)==0 or word==page_title:
                 #print("bad word:%s in page %s" % (word,page_title))
                 continue
-
-            page = pywikibot.Page(site,word)
-            #print(word)
             try:
-                if page.pageid != 0:                
-                    if hibur_cat_p not in page.categories() and yahas_cat_p not in page.categories():
-                        #print(word)
-                        check_loop(page_title,word,defi)
-            except KeyboardInterrupt: 
-                sys.exit()
-            except:
-                continue
+                page = pywikibot.Page(site,word)
+            except UnicodeDecodeError:
+                print("UnicodeDecodeError in page %s: %s"%(word, e.strerror))
+                print(word)
+                
+            if page.pageid != 0:                
+                if hibur_cat_p not in page.categories() and yahas_cat_p not in page.categories():
+                      #print(word)
+                      check_loop(page_title,word,defi)
     
     
 def check_page(site, page_title, page_text):
@@ -187,6 +182,10 @@ def check_page(site, page_title, page_text):
 
     for part in parts_gen:
         w = check_part(page_title,re.compile("^==\s*([^=]+)\s*==\s*\n*").search(part[0]).group(1).strip() ,part[1])
+        
+        
+        
+        
 
 
 def main(args):
@@ -220,7 +219,7 @@ def main(args):
     if article != u'':
         gen = (pywikibot.Page(site, article) for i in range(0,1))
         gen = pagegenerators.PreloadingGenerator(gen)
-    elif os.path.exists('pages-articles.xml.bz2') and from_article == '':
+    elif os.path.exists('pages-articles.xml.bz2'):
         print('parsing dump')
         all_wiktionary = XmlDump('pages-articles.xml.bz2').parse()  # open the dump and parse it.
         print('end parsing dump')
@@ -229,6 +228,12 @@ def main(args):
         all_wiktionary = filter(lambda page: page.ns == '0' and not page.isredirect, all_wiktionary)
         gen = (pywikibot.Page(site, p.title) for p in all_wiktionary)
         gen = pagegenerators.PreloadingGenerator(gen)
+        if from_article != '':
+            print(from_article)
+            for p in gen:
+                if p.title() == from_article:
+                    break
+                
     else:
         #TODO - make sure this case works
         print('Not using dump - use get_dump to download dump file or run with comment lise arguments')
@@ -242,7 +247,7 @@ def main(args):
     fsas = open('file.txt', 'w',500)
 
     for page in gen:
-        print(page.title())
+        #print(page.title())
         if limit == 0:
             break
         elif limit > 0:
