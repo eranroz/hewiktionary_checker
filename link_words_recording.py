@@ -60,9 +60,8 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
     def treat_page(self):
         global x
 
-        if x >= 10:
+        if x >= 20:
             return
-
         
         """Load the given page, do some changes, and save it."""
         #print(self.current_page.title())
@@ -77,16 +76,12 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
             #print(word)
             #
             if wikt_page.exists():
-                #print("EXIST:")   
-                #print("#"+word_without_nikud+"#")
-                #print("#"+word+"#")
                 parts_gen = split_parts(wikt_page.text)
                 
                 # the first part will always be either an empty string or a string before the first definition (like {{לשכתוב}})
                 final = []
                 first  = parts_gen.__next__()[0]
-                #print("first:")
-                #print(first)
+
                 if first.strip() != '':
                     final += [first]
                 state = TEMPLATE_STATE.BEFORE_START    
@@ -97,7 +92,9 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
                     if(sec_word == word):
                         final += [part[0]]
                         print("   FOUND MATCH: "+word)
-                        
+                        if re.compile("{{נגן").search(part[1]):
+                            print("ALREADY HAVE NAGAN")
+                            return
                         lines = part[1].splitlines()
                         line_idx = 0
                         for line in lines:
@@ -106,13 +103,13 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
                             #verb_template_regex='\n*{{ניתוח\s+דקדוקי\sלפועל\s*\|?\s*'
                             #if line.strip('\n\r') != '':
                             final += [line+'\n']
-                            #print(line)
+                            
                             if state == TEMPLATE_STATE.BEFORE_START and (re.compile(hewiktionary_constants.template_regex).search(line) or re.compile(hewiktionary_constants.verb_template_regex).search(line)):
                                 state = TEMPLATE_STATE.START
-                                #print("--starting template--")
+                                
                             elif state == TEMPLATE_STATE.START:
                                 if re.search("}}",line) and not re.search("{{",line):
-                                    #print("--ending template--")
+                                    
                                     state = TEMPLATE_STATE.END
                                     break
                         if state != TEMPLATE_STATE.END:
@@ -123,45 +120,24 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
                         final += ['\n'.join(lines[line_idx:])]
                     else:
                         if state == TEMPLATE_STATE.END:
-
                             final += ['\n']
-                            #print("final:")
-                            #print(final)
-
                             state = TEMPLATE_STATE.NEXT_PART
-                        #t = '\n'
-                        #if final == []:
-                        #    t = ''
-                        #print("part[0]:")
-                        #print(part[0])
-                        #print("part[1]:")
-                        #print(part[1])
                         
                         final += [part[0],part[1]]
-                #file = open(word_without_nikud+".txt",'w')            
+
                 new_page_text = ''.join(final)
-                #file.write(new_page_text)
-                #file.close()
-                #print(final)
-                #file = open("orig_"+word_without_nikud+".txt",'w')            
-                #file.write(wikt_page.text)
-                #file.close()
                 x += 1
                 if new_page_text != wikt_page.text:
                     print('saving %s' % wikt_page.title())
                     wikt_page.text = new_page_text
                     wikt_page.save('בוט שמוסיף תבנית "נגן"')
-                #    self.put_current(new_page_text, summary = u'בוט המחליף כותרות סעיפים מסדר 2 לסדר 3')
+
 
 def main(args):
     
     site = pywikibot.Site('commons', 'commons')    
     cat = pywikibot.Category(site,'Category:Hebrew_pronunciation')
     gen = pagegenerators.CategorizedPageGenerator(cat)
-    #maintain_page = pywikibot.Page(site, title = "Category:Hebrew_pronunciation",ns = 14)
-    #print(maintain_page)
-    #print("EXIST:")
-    #print(maintain_page.exists())
     
     global_args  = []
 
@@ -182,15 +158,6 @@ def main(args):
 #    if article:
 #        gen = [pywikibot.Page(site, article)]
 #        gen = pagegenerators.PreloadingGenerator(gen)
-#    else:
-#        print("sdfsdf")
-#        gen = pagegenerators.LinkedPageGenerator(maintain_page, content = True)
-        #gen = pagegenerators.RegexFilter.titlefilter(gen, '.+\.ogg$')
-
-    #for page in maintain_page.linkedPages():
-    #for page in gen:
-#   #     print('sdfsdfsdfsdff')
-    #    print(page)
         
     bot = HebrewWordsRecordsLinkerBot(generator = gen)
     bot.run()  
