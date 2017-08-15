@@ -119,7 +119,7 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
                             print('PROBLEM 1: seems like problems in page '+word_without_nikud)
                             return
                         mediafile_name = re.compile(u'^File:(He-.*.ogg)$').match(self.current_page.title()).group(1)
-                        final += ["{{נגן|קובץ=%s|כתובית הגיה}}\n" % mediafile_name]
+                        final += ["{{נגן|קובץ=%s|כתובית=הגיה}}\n" % mediafile_name]
                         final += ['\n'.join(lines[line_idx:])]
                     else:
                         if state == TEMPLATE_STATE.END:
