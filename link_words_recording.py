@@ -60,7 +60,7 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
     def treat_page(self):
         global x
 
-        if x >= 40:
+        if x >= 10:
             return
 
         
@@ -77,8 +77,8 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
             #print(word)
             #
             if wikt_page.exists():
-                print("EXIST:")   
-                print("#"+word_without_nikud+"#")
+                #print("EXIST:")   
+                #print("#"+word_without_nikud+"#")
                 #print("#"+word+"#")
                 parts_gen = split_parts(wikt_page.text)
                 
@@ -109,10 +109,10 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
                             #print(line)
                             if state == TEMPLATE_STATE.BEFORE_START and (re.compile(hewiktionary_constants.template_regex).search(line) or re.compile(hewiktionary_constants.verb_template_regex).search(line)):
                                 state = TEMPLATE_STATE.START
-                                print("--starting template--")
+                                #print("--starting template--")
                             elif state == TEMPLATE_STATE.START:
                                 if re.search("}}",line) and not re.search("{{",line):
-                                    print("--ending template--")
+                                    #print("--ending template--")
                                     state = TEMPLATE_STATE.END
                                     break
                         if state != TEMPLATE_STATE.END:
@@ -138,17 +138,20 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
                         #print(part[1])
                         
                         final += [part[0],part[1]]
-                file = open(word_without_nikud+".txt",'w')            
-                file.write(''.join(final))
-                file.close()
+                #file = open(word_without_nikud+".txt",'w')            
+                new_page_text = ''.join(final)
+                #file.write(new_page_text)
+                #file.close()
                 #print(final)
-                file = open("orig_"+word_without_nikud+".txt",'w')            
-                file.write(wikt_page.text)
-                file.close()
+                #file = open("orig_"+word_without_nikud+".txt",'w')            
+                #file.write(wikt_page.text)
+                #file.close()
                 x += 1
-        #if new_page_text != self.current_page.text:
-        #    print('saving %s' % self.current_page.title())
-        #    self.put_current(new_page_text, summary = u'בוט המחליף כותרות סעיפים מסדר 2 לסדר 3')
+                if new_page_text != wikt_page.text:
+                    print('saving %s' % wikt_page.title())
+                    wikt_page.text = new_page_text
+                    wikt_page.save('בוט שמוסיף תבנית "נגן"')
+                #    self.put_current(new_page_text, summary = u'בוט המחליף כותרות סעיפים מסדר 2 לסדר 3')
 
 def main(args):
     
