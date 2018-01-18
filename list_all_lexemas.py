@@ -66,10 +66,12 @@ def main(args):
     limit = -1
     article = ''
     from_article = ''
+    letter = None
     for arg in args:
         m = re.compile('^-limit:([0-9]+)$').match(arg)
         a = re.compile('^-article:(.+)$').match(arg)
         f = re.compile('^-from-article:(.+)$').match(arg)
+        l = re.compile('^-letter:(.{1})$').match(arg)
 
         if arg == '--get-dump':
             get_dump()  # download the latest dump if it doesnt exist
@@ -80,6 +82,8 @@ def main(args):
                 from_article = f.group(1)
         elif a:
             article = a.group(1)
+        elif l:
+            letter = l.group(1)
         else:
             global_args.append(arg)
 
@@ -104,6 +108,8 @@ def main(args):
         #gen_factory.getCombinedGenerator()
         if from_article != '':
             gen =  pagegenerators.AllpagesPageGenerator(start = from_article , site = site)
+        elif letter:
+            gen =  pagegenerators.AllpagesPageGenerator(start = letter , site = site)
         else:
             gen =  pagegenerators.AllpagesPageGenerator(site = site)
 
@@ -113,25 +119,32 @@ def main(args):
     words = []
     for page in gen:
         n = n + 1
-        if n%1000 == 0:
+        if n%100 == 0:
             print(n)
+            print(page.title())
         if limit == 0:
             break
         elif limit > 0:
             limit = limit -1
         if not page.exists() or page.isRedirectPage():
             continue
-        
+        if not page.title().startswith(letter):
+            break
+
         for lex in check_page(site, page.title(), page.get()):
             words.append("* [[%s#%s|%s]]" % (page.title(),lex,lex))
 
 
-         
+
     report_content = 'סך הכל %s ערכים\n' % str(len(words))
     #pages = sorted(words)
     report_content +=  '\n'.join(['%s' % p for p in words])
-    report_content += "\n\n[[קטגוריה: ויקימילון - תחזוקה]]"          
-    report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % 'רשימת_כל_המילים')
+    report_content += "\n\n[[קטגוריה: ויקימילון - תחזוקה]]"
+    report_page = None
+    if letter:
+        report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s/%s' % ('רשימת_כל_המילים',letter))
+    else:
+        report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % ('רשימת_כל_המילים'))
     report_page.text = report_content
     report_page.save("סריקה עם בוט ")
 
