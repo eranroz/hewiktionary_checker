@@ -7,7 +7,6 @@ This script replaces the titles of the sctions to the right title name required
 
 import pywikibot
 from pywikibot import pagegenerators
-from pywikibot.tools import issue_deprecation_warning
 
 import re
 import sys
@@ -55,25 +54,27 @@ class SectionTitleReplacerBot(pywikibot.CurrentPageBot):
 
 def main(args):
 
+    local_args = pywikibot.handle_args(args)
     site = pywikibot.Site('he', 'wiktionary')
     maintain_page = pywikibot.Page(site, "ויקימילון:תחזוקה/דפים_עם_סעיפים_שאינם_מהרשימה_הסגורה")
 
-    local_args = pywikibot.handle_args(args)
     genFactory = pagegenerators.GeneratorFactory()
-    article = None
     options = {}
 
-    for arg in local_args:
-        if arg.startswith("-article"):
-            article = re.compile('^-article:(.+)$').match(arg).group(1)
-        elif arg  == '-always':
-            options['always'] = True
-        else:
-            genFactory.handleArg(arg)
+    parser = argparse.ArgumentParser(description="replace wrong subsection titles in the Hebrew Wiktionary",epilog="Options include also global pywikibot options and all generators options")
+    parser.add_argument("--article",nargs=1, required=False)
+    parser.add_argument("-always",action='store_false', required=False)
+    args, factory_args = parser.parse_known_args(local_args)
+
+    options['always'] = args.always
+
+    for arg in factory_args:
+        genFactory.handleArg(arg)
 
     genFactory.handleArg('-intersect')
 
-    if article:
+    if args.article:
+        article = args.article[0]
         print(article[::-1])#the terminal shows hebrew left to write :(
         gen = [pywikibot.Page(site, article)]
         gen = pagegenerators.PreloadingGenerator(gen)
