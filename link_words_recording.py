@@ -1,52 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
 import pywikibot
 from pywikibot import pagegenerators
-from pywikibot.bot import (
-    SingleSiteBot, ExistingPageBot, NoRedirectPageBot, AutomaticTWSummaryBot)
-from pywikibot.tools import issue_deprecation_warning
 
 import re
 import os
 import sys
-import hewiktionary_constants
-
-def split_parts(page_text):
-
-    '''
-    sparates the page text to parts according to second level title and also seperates each title to 
-    from it's part.
-    For example:
-   
-    "
-    blabla
-    == A1 ==
-    text for defining A1
-
-    == A2 ==
-    text for defining A2
-    "
-    will create the generator: [('blabla','',unknown),
-                               ('== A1 ==','text for defining A1',<type>)
-                               ('== A2 ==','text for defining A2',<type>)]
-    '''
-    #for multile mode , the '^, $' will match both 
-    #the start/end of the string and the start/end of a line.
-
-    # the paranthess in the regex will add the delimiter 
-    # see http://stackoverflow.com/questions/2136556/in-python-how-do-i-split-a-string-and-keep-the-separators
-
-    #matches the level2 title, e.g '== ילד =='
-    parts = re.compile("(^==[^=]+==\s*$)",re.MULTILINE).split(page_text)
-
-    yield (parts.pop(0),'')
-    
-    for i in range(0,len(parts),2):        
-        title = parts[i]
-        part = parts[i+1]
-        yield (title,part)
+import hewiktionary
 
 class TEMPLATE_STATE:
     BEFORE_START = 1

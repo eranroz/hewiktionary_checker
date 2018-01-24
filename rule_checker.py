@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 r"""
 This bot will validate page against list of rules in he-wiktionary
@@ -14,8 +14,6 @@ python rule_checker.py -simulate -log:logrule.log -limit:5
 
 """
 
-from __future__ import unicode_literals
-from __future__ import division
 import pywikibot
 from pywikibot import pagegenerators
 import re
@@ -24,8 +22,11 @@ from pywikibot.xmlreader import XmlDump
 import requests
 import sys
 import checker
-import hewiktionary_constants
-from hewiktionary_constants import PAGE_TEXT_PART
+import hewiktionary
+from hewiktionary import PAGE_TEXT_PART
+import argparse
+from argparse import RawTextHelpFormatter
+import collections
 
 WARNING_PAGE_WITH_INVALID_FIELD = 'דפים עם סעיפים שאינם מהרשימה הסגורה'
 WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER = 'דפים עם סעיפים שאינם בסדר הנכון'
@@ -71,26 +72,18 @@ warning_to_checker = {}
 
 def fill_warning_to_checker(issues):
 
-    if len(issues) == 0:
+    if WARNING_PAGE_WITH_TEXT_BEFORE_DEF in issues:
         warning_to_checker[WARNING_PAGE_WITH_TEXT_BEFORE_DEF] = checker.TextBeforeDefChecker()
+    if WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM in issues:
         warning_to_checker[WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM] = checker.NonAcronymWithGereshChecker()
+    if WARNING_PAGE_ACRONYM_NO_GERSHAIM in issues:
         warning_to_checker[WARNING_PAGE_ACRONYM_NO_GERSHAIM] = checker.AcronymWithoutGereshChecker()
+    if WARNING_PAGE_WITH_FIRST_LEVEL_TITLE in issues:
         warning_to_checker[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = checker.FirstLevelTitleChecker()
+    if WARNINGS_PAGE_WITHOUT_TITLE in issues:
         warning_to_checker[WARNINGS_PAGE_WITHOUT_TITLE] = checker.NoTitleChecker()
+    if WARNING_GERSHAIM_IN_MARE_MAKOM in issues:
         warning_to_checker[WARNING_GERSHAIM_IN_MARE_MAKOM] = checker.GershaimInMareMakom()
-    else:
-        if WARNING_PAGE_WITH_TEXT_BEFORE_DEF in issues:
-            warning_to_checker[WARNING_PAGE_WITH_TEXT_BEFORE_DEF] = checker.TextBeforeDefChecker()
-        if WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM in issues:
-            warning_to_checker[WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM] = checker.NonAcronymWithGereshChecker()
-        if WARNING_PAGE_ACRONYM_NO_GERSHAIM in issues:
-            warning_to_checker[WARNING_PAGE_ACRONYM_NO_GERSHAIM] = checker.AcronymWithoutGereshChecker()
-        if WARNING_PAGE_WITH_FIRST_LEVEL_TITLE in issues:
-            warning_to_checker[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = checker.FirstLevelTitleChecker()
-        if WARNINGS_PAGE_WITHOUT_TITLE in issues:
-            warning_to_checker[WARNINGS_PAGE_WITHOUT_TITLE] = checker.NoTitleChecker()
-        if WARNING_GERSHAIM_IN_MARE_MAKOM in issues:
-            warning_to_checker[WARNING_GERSHAIM_IN_MARE_MAKOM] = checker.GershaimInMareMakom()
 
 warning_to_item_checker = {}
 
@@ -130,7 +123,7 @@ def fill_warning_to_item_checker(issues):
             warning_to_item_checker[WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE] = checker.KtzarmarWithoutKtzarmarTemplate()
         if WARNING_SEPARATED_HOMONIMIM in issues:
             warning_to_item_checker[WARNING_SEPARATED_HOMONIMIM] = checker.HomonimimSeperated()
-                    
+
 warning_to_field_checker = {}
 
 def fill_warning_to_field_checker(issues):
@@ -142,85 +135,26 @@ def fill_warning_to_field_checker(issues):
             warning_to_field_checker[WARNING_PAGE_WITH_INVALID_FIELD] = checker.InvalidFieldItemChecker()
         if WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER in issues:
             warning_to_field_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
-            
-def get_dump():
-    """
-    This function downloads teh latest wiktionary dump
-    """
-    # we already have a dump
-    #if os.path.exists('pages-articles.xml.bz2'):
-    #    return
-    # get a new dump
-    print('Dump doesnt exist locally - downloading...')
-    r = requests.get('http://dumps.wikimedia.org/hewiktionary/latest/hewiktionary-latest-pages-articles.xml.bz2',
-                     stream=True)
-    with open('pages-articles.xml.bz2', 'wb') as dump_fd:
-        for chunk in r.iter_content(chunk_size=1024):
-            if chunk:
-                dump_fd.write(chunk)
-    print('New dump downloaded successfully')
-
-
-
-def split_parts(page_text):
-
-    '''
-    sparates the page text to parts according to second level title and also seperates each title to 
-    from it's part.
-    For example:
-   
-    "
-    blabla
-    == A1 ==
-    text for defining A1
-
-    == A2 ==
-    text for defining A2
-    "
-    will create the generator: [('blabla','',unknown),
-                               ('== A1 ==','text for defining A1',<type>)
-                               ('== A2 ==','text for defining A2',<type>)]
-    '''
-    #for multile mode , the '^, $' will match both 
-    #the start/end of the string and the start/end of a line.
-
-    # the paranthess in the regex will add the delimiter 
-    # see http://stackoverflow.com/questions/2136556/in-python-how-do-i-split-a-string-and-keep-the-separators
-
-    #matches the level2 title, e.g '== ילד =='
-    parts = re.compile("(^==[^=]+==\s*$)",re.MULTILINE).split(page_text)
-
-    yield (parts.pop(0),'')
-    
-    for i in range(0,len(parts),2):        
-        title = parts[i]
-        part = parts[i+1]
-        yield (title,part)
-        
 
 def check_part(page_title,title,part_text):
 
-    warnings = {}
-    
+    warnings = collections.defaultdict(list)
+
     for key, value in warning_to_item_checker.items():
         v = value.rule_break_found(page_title,title,part_text,PAGE_TEXT_PART.WHOLE_ITEM)
         if v:
-            if key not in warnings:
-                warnings[key] = []
-            warnings[key] += v
-            
+            warnings[key].append(v)
+
     fields = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).findall(part_text)
-        
+
     for f in fields:
         field_title =  re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
-        
+
         for key, value in warning_to_field_checker.items():
             v = value.rule_break_found(page_title,'',field_title,PAGE_TEXT_PART.SECTION_TITLE)
             if v:
-                if key not in warnings:
-                    warnings[key] = []
-                warnings[key] += v
-                
+                warnings[key].extend(v)
+
     return warnings
 
 
@@ -236,7 +170,7 @@ def check_page(site, page_title, page_text):
     # The list of warnings is in the head of this file , they all start with WARNING_
     # the value of each enty is a list of strings , each string is a detailed description of what is wrong
     # if there is no need for detailed description and it is enough to put link to the page, the list will be empty
-    warnings = {}
+    warnings = collections.defaultdict(list)
 
     for key, value in warning_to_checker.items():
         value.reset_state()
@@ -246,13 +180,14 @@ def check_page(site, page_title, page_text):
         value.reset_state()
 
     if page_title.endswith('(שורש)'):
+        print("got SHORESH!! %s" % page_title)
         return warnings
 
     for key, value in warning_to_checker.items():
         if value.rule_break_found(page_title,'',page_text,PAGE_TEXT_PART.WHOLE_PAGE):
             warnings[key] = []
-         
-    parts_gen = split_parts(page_text)
+
+    parts_gen = hewiktionary.split_parts(page_text)
 
     # the first part will always be either an empty string or a string before the first definition (like {{לשכתוב}})
     parts_gen.__next__()
@@ -260,82 +195,70 @@ def check_page(site, page_title, page_text):
     for part in parts_gen:
         w = check_part(page_title,re.compile("^==\s*([^=]+)\s*==\s*\n*").search(part[0]).group(1).strip() ,part[1])
         for key in w:
-            if key in warnings:
-                warnings[key] += w[key]
-            else:
-                warnings[key] = w[key]
+                warnings[key].extend(w[key])
     return warnings
 
 
 def main(args):
-    
+
+    local_args = pywikibot.handle_args(args)
+
     site = pywikibot.Site('he', 'wiktionary')
-    global_args  = []
+    genFactory = pagegenerators.GeneratorFactory()
+    options = {}
 
-    limit = -1
-    article = ''
-    issues_to_search = []
-    for arg in args:
-        m = re.compile('^-limit:([0-9]+)$').match(arg)
-        a = re.compile('^-article:(.+)$').match(arg)
-        l = re.compile('^-list-issues$').match(arg)
-        for key,val in warning_to_code.items():
-            if re.compile('^'+val+'$').match(arg):
-                issues_to_search += [key]
-        if arg == '--get-dump':
-            get_dump()  # download the latest dump if it doesnt exist
-        elif m:
-            limit = int(m.group(1))
-        elif a:
-            article = a.group(1)
-        elif l:
-            l = []
-            for key,val in warning_to_code.items():
-                l+=[key[::-1],val]
-                
-            sys.exit("List of issues checked, you can run the command with the issue code in order to run only this issue:\n"+"%s (code: %s)\n"*len(warning_to_code) % tuple(l))
-        else:
-            global_args.append(arg)
+    warnings = [i for key,val in warning_to_code.items() for i in [val,key[::-1]]]
 
-    local_args = pywikibot.handle_args(global_args)
-        
-    if article != u'':
-        gen = (pywikibot.Page(site, article) for i in range(0,1))
-        gen = pagegenerators.PreloadingGenerator(gen)
-    elif os.path.exists('pages-articles.xml.bz2'):
+    parser = argparse.ArgumentParser(description=("main checker, add an issue code to check this issue. The list is:\r\n"+"%s (%s)\r\n"*len(warning_to_code) )% tuple(warnings),epilog="Options include also global pywikibot options and all generators options", formatter_class=RawTextHelpFormatter)
+
+    parser.add_argument("--article",nargs=1, required=False)
+    parser.add_argument("-always",action='store_false', required=False,default=True)
+    parser.add_argument("--issues",nargs='+',required=False,choices=list(warning_to_code.values()),default=list(warning_to_code.values()))
+
+    args, factory_args = parser.parse_known_args(local_args)
+
+    options['always'] = args.always
+
+    for arg in factory_args:
+        genFactory.handleArg(arg)
+
+    genFactory.handleArg('-intersect')
+    genFactory.handleArg('-titleregexnot:\(שורש\)')
+
+    print(args)
+    issues_to_search = [k for k,v in warning_to_code.items() if v in args.issues]
+
+    gen = None
+    if args.article:
+        article = args.article[0]
+        gen = pagegenerators.PreloadingGenerator([pywikibot.Page(site, article)])
+    elif os.path.exists('hewiktionary-latest-pages-articles.xml.bz2'):
         print('parsing dump')
-        all_wiktionary = XmlDump('pages-articles.xml.bz2').parse()  # open the dump and parse it.
+        all_wiktionary = XmlDump('hewiktionary-latest-pages-articles.xml.bz2').parse()  # open the dump and parse it.
         print('end parsing dump')
-        
+
         # filter only main namespace
-        all_wiktionary = filter(lambda page: page.ns == '0' and not page.isredirect, all_wiktionary)
+        all_wiktionary = filter(lambda page: page.ns == '0' and not page.isredirect and not page.title.endswith('(שורש)'), all_wiktionary)
         gen = (pywikibot.Page(site, p.title) for p in all_wiktionary if check_page(site, p.title, p.text))
         gen = pagegenerators.PreloadingGenerator(gen)
     else:
-        #TODO - make sure this case works
-        print('Not using dump - use get_dump to download dump file or run with comment lise arguments')
-        #gen_factory = pagegenerators.GeneratorFactory(site,'-ns:1')
-        #gen_factory.getCombinedGenerator()
-        gen =  pagegenerators.AllpagesPageGenerator(site = site)
+        gen =  pagegenerators.AllpagesPageGenerator(site = site,includeredirects=False)#this is only namespace 0 by default
 
-    
+    gen = genFactory.getCombinedGenerator(gen)#combine with user args
+
     # a dictionary where the key is the issue and the value is list of pages violates it
-    pages_by_issues = dict()
+    pages_by_issues = collections.defaultdict(list)
+
+
 
     fill_warning_to_checker(issues_to_search)
     fill_warning_to_item_checker(issues_to_search)
     fill_warning_to_field_checker(issues_to_search)
 
     for page in gen:
-        if limit == 0:
-            break
-        elif limit > 0:
-            limit = limit -1
         try:
             issues = check_page(site, page.title(), page.get())
             for issue in issues:
-                if issue not in pages_by_issues:
-                    pages_by_issues[issue] = []
                 if issues[issue] == []:
                     pages_by_issues[issue].append('* [[%s]]' % page.title())
                 else:
@@ -343,25 +266,21 @@ def main(args):
                         pages_by_issues[issue].append( ('* [[%s]] :' % page.title()) + detailed_issue)
 
         except pywikibot.IsRedirectPage:
-            print (page.title().encode('utf-8') + "is redirect page".encode('utf-8'))
+            print ("%s is redirect page" % page.title())
             continue
         except pywikibot.NoPage:
-            print (page.title().encode('utf-8') + ": NoPage exception".encode('utf-8'))
+            print ("%s: NoPage exception" % page.title())
             continue
     # after going over all pages, report it to a maintenance page so human go over it
     for issue, pages in pages_by_issues.items():
         print ('found issue %s' % issue)
         report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % issue)
-         
         report_content = 'סך הכל %s ערכים\n' % str(len(pages))
         pages = sorted(pages)
         report_content +=  '\n'.join(['%s' % p for p in pages])
-        report_content += "\n\n[[קטגוריה: ויקימילון - תחזוקה]]"                    
+        report_content += "\n\n[[קטגוריה: ויקימילון - תחזוקה]]"
         report_page.text = report_content
         report_page.save("סריקה עם בוט ")
-        
     print ('_____________________DONE____________________')
-    
-print 
 if __name__ == "__main__":
     main(sys.argv)

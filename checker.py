@@ -1,5 +1,5 @@
-import hewiktionary_constants
-from hewiktionary_constants import PAGE_TEXT_PART
+import hewiktionary
+from hewiktionary import PAGE_TEXT_PART
 import pywikibot
 import re
 import pywikibot.textlib
@@ -45,13 +45,13 @@ class NoTitleChecker(Checker):
 class NoGremmerBoxChecker(Checker):
     def rule_break_found(self,page_title,text_title,text,text_portion):
         
-        if hewiktionary_constants.KATEGORIA_PITGAMI_REGEX.search(text) or text.endswith("'"):
+        if hewiktionary.KATEGORIA_PITGAMI_REGEX.search(text) or text.endswith("'"):
             return ''
-        elif re.compile(hewiktionary_constants.template_regex+'\n').match(text):
+        elif re.compile(hewiktionary.template_regex+'\n').match(text):
             return ''
-        elif re.search(hewiktionary_constants.verb_template_regex,text):
+        elif re.search(hewiktionary.verb_template_regex,text):
             return ''
-        elif re.search(hewiktionary_constants.GERSHAIM_REGEX,text_title):
+        elif re.search(hewiktionary.GERSHAIM_REGEX,text_title):
             return ''
         elif re.search('[a-zA-Z]',text_title):
             return ''
@@ -65,7 +65,7 @@ class AcronymWithoutGereshChecker(Checker):
         except pywikibot.InvalidTitle:
             print("AcronymWithoutGereshChecker: invalid category in page %s" % (page_title))
             return False
-        if not hewiktionary_constants.GERSHAIM_REGEX.findall(page_title) and ('ראשי תיבות' in text_categories):
+        if not hewiktionary.GERSHAIM_REGEX.findall(page_title) and ('ראשי תיבות' in text_categories):
             return True
         return False
     
@@ -76,7 +76,7 @@ class NonAcronymWithGereshChecker(Checker):
         except pywikibot.InvalidTitle:
             print("NonAcronymWithGereshChecker: invalid category in page %s" % (page_title))
             return False
-        if hewiktionary_constants.GERSHAIM_REGEX.findall(page_title) and ('ראשי תיבות' not in text_categories):
+        if hewiktionary.GERSHAIM_REGEX.findall(page_title) and ('ראשי תיבות' not in text_categories):
             return True
         return False
 
@@ -94,7 +94,7 @@ class GershaimInMareMakom(Checker):
             for tsitut in tsitutim:
                 parts = tsitut.split('|')
                 
-                if hewiktionary_constants.GERSHAIM_GERESH_REGEX.findall(parts[-1]) or hewiktionary_constants.GERSHAIM_GERESH_REGEX.findall(parts[-2]) or hewiktionary_constants.GERSHAIM_GERESH_REGEX.findall(parts[-3]):
+                if hewiktionary.GERSHAIM_GERESH_REGEX.findall(parts[-1]) or hewiktionary.GERSHAIM_GERESH_REGEX.findall(parts[-2]) or hewiktionary.GERSHAIM_GERESH_REGEX.findall(parts[-3]):
                     return True
         return False
 
@@ -103,7 +103,7 @@ class GershaimInMareMakom(Checker):
             
 class SecondLevelTitleField(Checker):
     def rule_break_found(self,page_title,text_title,text,text_portion):
-        if text_title in hewiktionary_constants.titles_list:
+        if text_title in hewiktionary.titles_list:
             return ['סעיף עם כתורת מסדר 2: %s' % text_title]
         return ''
     
@@ -151,7 +151,7 @@ class ErechBetWrong(Checker):
 
 class InvalidFieldItemChecker(Checker):
     def rule_break_found(self,page_title,text_title,text,text_portion):
-            if text not in hewiktionary_constants.titles_to_order:
+            if text not in hewiktionary.titles_to_order:
                 return ['סעיף שאינו מהרשימה: %s' % text]
 
 class InvalidFieldOrderItemChecker(Checker):
@@ -170,9 +170,9 @@ class InvalidFieldOrderItemChecker(Checker):
         if text_portion == PAGE_TEXT_PART.WHOLE_PAGE or text_portion == PAGE_TEXT_PART.WHOLE_ITEM:
             self.reset_state()
             return []
-        if text not in hewiktionary_constants.titles_to_order:
+        if text not in hewiktionary.titles_to_order:
             return []
-        new_state = hewiktionary_constants.titles_to_order[text]
+        new_state = hewiktionary.titles_to_order[text]
         if new_state < self._state:
             return ['סעיף %s צריך להיות לפני סעיף %s' % (text,self._last_match) ]
         else:
@@ -241,7 +241,7 @@ class KtzarmarWithoutKtzarmarTemplate(Checker):
             return ['(אין הגדרות) %s' % text_title]
         
         sec_titles = sections[0::2]
-        sec_no_reo_gam = [s for s in sec_titles if hewiktionary_constants.REOGAM not in s]
+        sec_no_reo_gam = [s for s in sec_titles if hewiktionary.REOGAM not in s]
 
         if len(sec_no_reo_gam) < 2:
             #print("found less than 2 sections %s" % text_title)
