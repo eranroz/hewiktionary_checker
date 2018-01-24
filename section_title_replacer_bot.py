@@ -1,42 +1,38 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 r"""
-In the Hebrew Wiktionary , the titles of sections of defintions must be from a determined list, the list is listed in hewiktionary_constants.py .
-This script replace the titles of the sctions to the right title name required
+In the Hebrew Wiktionary, the titles of sections of defintions must be from a determined list, the list is listed in hewiktionary.py.
+This script replaces the titles of the sctions to the right title name required
 """
 
-from __future__ import unicode_literals
 import pywikibot
 from pywikibot import pagegenerators
-from pywikibot.bot import (
-    SingleSiteBot, ExistingPageBot, NoRedirectPageBot, AutomaticTWSummaryBot)
 from pywikibot.tools import issue_deprecation_warning
 
 import re
 import sys
-import rule_checker
-import hewiktionary_constants
+import hewiktionary
+import argparse
 
 titles_replacer = {
 
-    "דעת פרשנים" : hewiktionary_constants.PARSHANIM,
-    "צרופים" :  hewiktionary_constants.TSERUFIM,
-    "ביטויים וצרופים" :  hewiktionary_constants.TSERUFIM,
-    "צירופים וביטויים" :  hewiktionary_constants.TSERUFIM,
-    "מילים קרובות" : hewiktionary_constants.NIRDAFOT,
-    "מלים נרדפות" : hewiktionary_constants.NIRDAFOT,
-    "נרדפות" : hewiktionary_constants.NIRDAFOT,
-    "מילים מנוגדות" : hewiktionary_constants.NIGUDIM,
-    "נגודים" : hewiktionary_constants.NIGUDIM,
-    "תרגומים" : hewiktionary_constants.TERGUM,
-    "תירגום" : hewiktionary_constants.TERGUM,
-    "תירגומים" : hewiktionary_constants.TERGUM,
-    "ראה גם" : hewiktionary_constants.REOGAM,
-    "הערת שוליים" : hewiktionary_constants.SHULAIM,
-    "הערות שוליים" : hewiktionary_constants.SHULAIM,
-    "קשורים חיצוניים" : hewiktionary_constants.KISHURIM,
-    "מקורות" : hewiktionary_constants.SIMUCHIN,
-    "גזרון" : hewiktionary_constants.GIZRON
+    "דעת פרשנים" : hewiktionary.PARSHANIM,
+    "צרופים" :  hewiktionary.TSERUFIM,
+    "ביטויים וצרופים" :  hewiktionary.TSERUFIM,
+    "צירופים וביטויים" :  hewiktionary.TSERUFIM,
+    "מילים קרובות" : hewiktionary.NIRDAFOT,
+    "מלים נרדפות" : hewiktionary.NIRDAFOT,
+    "נרדפות" : hewiktionary.NIRDAFOT,
+    "מילים מנוגדות" : hewiktionary.NIGUDIM,
+    "נגודים" : hewiktionary.NIGUDIM,
+    "תרגומים" : hewiktionary.TERGUM,
+    "תירגום" : hewiktionary.TERGUM,
+    "תירגומים" : hewiktionary.TERGUM,
+    "ראה גם" : hewiktionary.REOGAM,
+    "הערת שוליים" : hewiktionary.SHULAIM,
+    "קשורים חיצוניים" : hewiktionary.KISHURIM,
+    "מקורות" : hewiktionary.SIMUCHIN,
+    "גזרון" : hewiktionary.GIZRON
 }
 
 class SectionTitleReplacerBot(pywikibot.CurrentPageBot):
@@ -48,50 +44,48 @@ class SectionTitleReplacerBot(pywikibot.CurrentPageBot):
         old_page_text = self.current_page.text
         new_page_text = old_page_text
 
-        page_title = self.current_page.title()
-
         for key, value in titles_replacer.items():
-            new_page_text = re.sub("===\s*%s\s*===" % (key), "=== %s ===" % (value), new_page_text, re.MULTILINE )
-    
+            if re.compile("===\s*%s\s*===" % (key)).search(new_page_text):
+                new_page_text = re.sub("===\s*%s\s*===" % (key), "=== %s ===" % (value), new_page_text, re.MULTILINE )
+
         if(new_page_text != old_page_text):
             print('CHANGED')
             self.put_current(new_page_text, summary = u'בוט המחליף כותרות סעיפים')
 
+
 def main(args):
-    
-    site = pywikibot.Site('he', 'wiktionary')    
+
+    site = pywikibot.Site('he', 'wiktionary')
     maintain_page = pywikibot.Page(site, "ויקימילון:תחזוקה/דפים_עם_סעיפים_שאינם_מהרשימה_הסגורה")
 
-    global_args  = []
-
-    limit = 0
+    local_args = pywikibot.handle_args(args)
+    genFactory = pagegenerators.GeneratorFactory()
     article = None
+    options = {}
 
-    for arg in args:
-        m = re.compile('^-limit:([0-9]+)$').match(arg)
-        a = re.compile('^-article:(.+)$').match(arg)
-        if m:
-            limit = int(m.group(1))
-        elif a:
-            article = a.group(1)
+    for arg in local_args:
+        if arg.startswith("-article"):
+            article = re.compile('^-article:(.+)$').match(arg).group(1)
+        elif arg  == '-always':
+            options['always'] = True
         else:
-            global_args.append(arg)
+            genFactory.handleArg(arg)
 
-    local_args = pywikibot.handle_args(global_args)
+    genFactory.handleArg('-intersect')
 
     if article:
-        print(article[::-1])
-        gen = [pywikibot.Page(site, article.decode('utf-8'))]
+        print(article[::-1])#the terminal shows hebrew left to write :(
+        gen = [pywikibot.Page(site, article)]
         gen = pagegenerators.PreloadingGenerator(gen)
     else:
-        gen = pagegenerators.LinkedPageGenerator(maintain_page,total = limit, content = True)
+        gen = pagegenerators.LinkedPageGenerator(maintain_page, content = True)
 
+    gen = genFactory.getCombinedGenerator(gen)
 
-    bot = SectionTitleReplacerBot(generator = gen,site = site)
-    bot.run()  
+    bot = SectionTitleReplacerBot(generator = gen,site = site, **options)
+    bot.run()
 
     print('_____________________DONE____________________')
-    
 
 if __name__ == "__main__":
     main(sys.argv)

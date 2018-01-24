@@ -142,6 +142,7 @@ def main(args):
     limit = 0
     article = None
 
+    local_args = pywikibot.handle_args(global_args)
     for arg in args:
         m = re.compile('^-limit:([0-9]+)$').match(arg)
         a = re.compile('^-article:(.+)$').match(arg)
@@ -152,7 +153,7 @@ def main(args):
         else:
             global_args.append(arg)
 
-    local_args = pywikibot.handle_args(global_args)
+
     if article:
         gen = [pywikibot.Page(site, article)]
         gen = pagegenerators.PreloadingGenerator(gen)
