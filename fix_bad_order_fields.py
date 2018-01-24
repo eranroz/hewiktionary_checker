@@ -144,15 +144,15 @@ def fix_page(page_title, page_text):
     if defs_num == 0:
         print('page' + page_title +'has no defenitions')
         return
-        
+
     elif defs_num % 2 != 0:
          print('page' + page_title +' is mal formed ')
          return
-    
+
     tit = 1
-    
+
     for part in def_list:
-        
+
         #print part
         if tit == 0: #tit 0 : definition
             #if verbose:
@@ -160,7 +160,6 @@ def fix_page(page_title, page_text):
             if not p:
                 print('problem with this page')
                 return None
-    
             final += [p]
         else:
 

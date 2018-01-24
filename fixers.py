@@ -1,7 +1,7 @@
 import pywikibot
 from pywikibot import pagegenerators
 import re
-import hewiktionary_constants
+import hewiktionary
 
 class Fixer:
     def __init__(self):
@@ -36,7 +36,7 @@ class SectionTitleLvl2ndTo3rdFixer(pywikibot.CurrentPageBot):
             
         for part_title in part_titles:        
             title = re.compile("==\s*([^=]+)\s*==").search(part_title).group(1).strip()
-            if title in hewiktionary_constants.titles_list:
+            if title in hewiktionary.titles_list:
                 new_page_text = re.sub('==\s*'+title+'\s*==','==='+title+'===',new_page_text,re.MULTILINE)
             
         if new_page_text != self.current_page.text:
@@ -44,24 +44,24 @@ class SectionTitleLvl2ndTo3rdFixer(pywikibot.CurrentPageBot):
             self.put_current(new_page_text, summary = u'בוט המחליף כותרות סעיפים מסדר 2 לסדר 3')
 titles_replacer = {
 
-    "דעת פרשנים" : hewiktionary_constants.PARSHANIM,
-    "צרופים" :  hewiktionary_constants.TSERUFIM,
-    "ביטויים וצרופים" :  hewiktionary_constants.TSERUFIM,
-    "צירופים וביטויים" :  hewiktionary_constants.TSERUFIM,
-    "מילים קרובות" : hewiktionary_constants.NIRDAFOT,
-    "מלים נרדפות" : hewiktionary_constants.NIRDAFOT,
-    "נרדפות" : hewiktionary_constants.NIRDAFOT,
-    "מילים מנוגדות" : hewiktionary_constants.NIGUDIM,
-    "נגודים" : hewiktionary_constants.NIGUDIM,
-    "תרגומים" : hewiktionary_constants.TERGUM,
-    "תירגום" : hewiktionary_constants.TERGUM,
-    "תירגומים" : hewiktionary_constants.TERGUM,
-    "ראה גם" : hewiktionary_constants.REOGAM,
-    "הערת שוליים" : hewiktionary_constants.SHULAIM,
-    "הערות שוליים" : hewiktionary_constants.SHULAIM,
-    "קשורים חיצוניים" : hewiktionary_constants.KISHURIM,
-    "מקורות" : hewiktionary_constants.SIMUCHIN,
-    "גזרון" : hewiktionary_constants.GIZRON
+    "דעת פרשנים" : hewiktionary.PARSHANIM,
+    "צרופים" :  hewiktionary.TSERUFIM,
+    "ביטויים וצרופים" :  hewiktionary.TSERUFIM,
+    "צירופים וביטויים" :  hewiktionary.TSERUFIM,
+    "מילים קרובות" : hewiktionary.NIRDAFOT,
+    "מלים נרדפות" : hewiktionary.NIRDAFOT,
+    "נרדפות" : hewiktionary.NIRDAFOT,
+    "מילים מנוגדות" : hewiktionary.NIGUDIM,
+    "נגודים" : hewiktionary.NIGUDIM,
+    "תרגומים" : hewiktionary.TERGUM,
+    "תירגום" : hewiktionary.TERGUM,
+    "תירגומים" : hewiktionary.TERGUM,
+    "ראה גם" : hewiktionary.REOGAM,
+    "הערת שוליים" : hewiktionary.SHULAIM,
+    "הערות שוליים" : hewiktionary.SHULAIM,
+    "קשורים חיצוניים" : hewiktionary.KISHURIM,
+    "מקורות" : hewiktionary.SIMUCHIN,
+    "גזרון" : hewiktionary.GIZRON
 }
 
 class SectionTitleReplacerBot(pywikibot.CurrentPageBot):
@@ -93,7 +93,6 @@ class SectionTitleReplacerBot(pywikibot.CurrentPageBot):
             print('CHANGED')
             self.put_current(new_page_text, summary = u'בוט המחליף כותרות סעיפים')
 
-            
 class LinkShoreshToTemplateShoresh(Fixer):
     def __init__(self, **kwargs):
         super(LinkShoreshToTemplateShoresh,self).__init__(**kwargs)

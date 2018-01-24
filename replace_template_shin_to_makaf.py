@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 r"""
 According to Ariel1024 :
@@ -16,7 +16,7 @@ import re
 import os
 from pywikibot.xmlreader import XmlDump
 import sys
-    
+
 class ShinToMakafBot(pywikibot.CurrentPageBot):
 
     def treat_page(self):
@@ -32,7 +32,7 @@ class ShinToMakafBot(pywikibot.CurrentPageBot):
         new_page_text = re.sub(u'(\{\{ש\}\}\n?){2,}','{{-}}\n',self.current_page.text,re.MULTILINE)
         if new_page_text != self.current_page.text:
             print('saving page %s' % self.current_page.title())
-            self.put_current(new_page_text, summary = u'בוט המחליף תבניות {{ש}} לתבנית {{-}} \u200f')           
+            self.put_current(new_page_text, summary = u'בוט המחליף תבניות {{ש}} לתבנית {{-}} \u200f')
         return
 
 def main(args):
@@ -43,9 +43,8 @@ def main(args):
     limit = 0
     article = ''
 
-    
     for arg in args:
-    
+
         m = re.compile('^-limit:([0-9]+)$').match(arg)
         a = re.compile('^-article:(.+)$').match(arg)
         if arg == '--get-dump':
@@ -68,7 +67,7 @@ def main(args):
     elif os.path.exists('pages-articles.xml.bz2'):
         print('parsing dump')
         all_wiktionary = XmlDump('pages-articles.xml.bz2').parse()  # open the dump and parse it.
-        print('end parsing dump')        
+        print('end parsing dump')
         # filter only main namespace
         all_wiktionary = filter(lambda page: page.ns == '0' and not page.isredirect, all_wiktionary)
         gen = (pywikibot.Page(site, p.title) for p in all_wiktionary)

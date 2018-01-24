@@ -43,7 +43,7 @@ fixers_to_tahzuka_file = {
 
 
 def fill_all_pages_fixers(issues):
-    f = {}    
+    f = {}
     if len(issues) == 0:
         f["rlsts"] = fixers.LinkShoreshToTemplateShoresh()
         f["rtsm"] = fixers.ShinToMakafBot()

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 r"""
 According to Ariel1024 :
@@ -24,12 +24,12 @@ class LinkShoreshToTemplateShoresh(pywikibot.CurrentPageBot):
         super(LinkShoreshToTemplateShoresh,self).__init__(**kwargs)
         self._shoresh = u'שורש'
         self._kategoria = u'קטגוריה'
-        
+
     def treat_page(self):
-        
+
         new_page_text = re.sub(u'\[\['+self._kategoria+u':([^\]]*) \('+self._shoresh+u'\)\]\]',u'{{'+self._shoresh+r'|\1}}',self.current_page.text,re.MULTILINE)
         if new_page_text != self.current_page.text:
-            self.put_current(new_page_text, summary = u'בוט המחליף לינק לשורש בתבנית שורש')           
+            self.put_current(new_page_text, summary = u'בוט המחליף לינק לשורש בתבנית שורש')
         return
 
 def main(args):
@@ -40,9 +40,9 @@ def main(args):
     limit = 0
     article = ''
     print(__file__+" סריקה עם בוט")
-    
+
     for arg in args:
-    
+
         m = re.compile('^-limit:([0-9]+)$').match(arg)
         a = re.compile('^-article:(.+)$').match(arg)
         if arg == '--get-dump':

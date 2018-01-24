@@ -1,18 +1,13 @@
 
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
 import pywikibot
 from pywikibot import pagegenerators
-from pywikibot.bot import (
-    SingleSiteBot, ExistingPageBot, NoRedirectPageBot, AutomaticTWSummaryBot)
-from pywikibot.tools import issue_deprecation_warning
 
 import re
-import os
 import sys
-import hewiktionary_constants
+import hewiktionary
 
 class SectionTitleLvl2ndTo3rdBot(pywikibot.CurrentPageBot):
 
@@ -20,23 +15,20 @@ class SectionTitleLvl2ndTo3rdBot(pywikibot.CurrentPageBot):
         """Load the given page, do some changes, and save it."""
         new_page_text = self.current_page.text
 
-        
         part_titles = re.findall("^==[^=\n]+==[ \r\t]*$",self.current_page.text,re.MULTILINE)
-        
+
         for part_title in part_titles:
 
-
             title = re.compile("==\s*([^=]+)\s*==").search(part_title).group(1).strip()
-            if title in hewiktionary_constants.titles_list:
+            if title in hewiktionary.titles_list:
                 new_page_text = re.sub('==\s*'+title+'\s*==','==='+title+'===',new_page_text,re.MULTILINE)
-            
 
         if new_page_text != self.current_page.text:
             print('saving %s' % self.current_page.title())
             self.put_current(new_page_text, summary = u'בוט המחליף כותרות סעיפים מסדר 2 לסדר 3')
 
 def main(args):
-    
+
     site = pywikibot.Site('he', 'wiktionary')    
     maintain_page = pywikibot.Page(site, "ויקימילון:תחזוקה/דפים_עם_כותרת_סעיף_מסדר_2")
 
@@ -65,10 +57,10 @@ def main(args):
 
 
     bot = SectionTitleLvl2ndTo3rdBot(generator = gen,site = site)
-    bot.run()  
+    bot.run()
 
     print('_____________________DONE____________________')
-    
+
 
 if __name__ == "__main__":
     main(sys.argv)
