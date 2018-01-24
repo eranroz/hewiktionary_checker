@@ -200,20 +200,17 @@ class HomonimimSeperated(Checker):
         else:
             trim_title = tmp_title
 
-        if len(self._titles) > 0 and trim_title != self._titles[-1]:
-            i = 0
-            while(i<len(self._titles)-1):
-                if trim_title == self._titles[i]:
-                    #print("found seperation t=  #%s#, #%s#" % (self._titles[i],self._titles[i].encode()))
+        if self._titles and trim_title != self._titles[-1]:
+            for t in self._titles:
+                if trim_title == t:
                     self._titles.append(trim_title)
                     return ["ההומונים %s מופרד" % trim_title]
-                i = i+1
-        
-        self._titles.append(trim_title)
-        return []                
-                        
 
-            
+        self._titles.append(trim_title)
+        return []
+
+
+
 # a ktzarmar is an item that either has no definition or has less than two section (not including "reo gam")
 class KtzarmarWithoutKtzarmarTemplate(Checker):
     def __init__(self):

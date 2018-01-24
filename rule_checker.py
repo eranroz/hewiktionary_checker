@@ -143,7 +143,7 @@ def check_part(page_title,title,part_text):
     for key, value in warning_to_item_checker.items():
         v = value.rule_break_found(page_title,title,part_text,PAGE_TEXT_PART.WHOLE_ITEM)
         if v:
-            warnings[key].append(v)
+            warnings[key].extend(v)
 
     fields = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).findall(part_text)
 
@@ -263,6 +263,7 @@ def main(args):
                     pages_by_issues[issue].append('* [[%s]]' % page.title())
                 else:
                     for detailed_issue in issues[issue]:
+                        #print(detailed_issue)
                         pages_by_issues[issue].append( ('* [[%s]] :' % page.title()) + detailed_issue)
 
         except pywikibot.IsRedirectPage:
