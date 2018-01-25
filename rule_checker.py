@@ -68,24 +68,32 @@ warning_to_code = {
     WARNING_SEPARATED_HOMONIMIM : "sh"
 }
 
-warning_to_checker = {}
+warnings_to_checker2 = {
 
-def fill_warning_to_checker(issues):
+    WARNING_PAGE_WITH_INVALID_FIELD : checker.InvalidFieldItemChecker(),
+    WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER : checker.InvalidFieldOrderItemChecker(),
+    WARNING_PAGE_WITH_TEXT_BEFORE_DEF : checker.TextBeforeDefChecker(),
+    WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM : checker.NonAcronymWithGereshChecker(),
+    WARNING_PAGE_ACRONYM_NO_GERSHAIM : checker.AcronymWithoutGereshChecker(),
+    WARNING_PAGE_WITHOUT_GREMMER_BOX : checker.NoGremmerBoxChecker(),
+    WARNING_PAGE_WITH_FIRST_LEVEL_TITLE : checker.FirstLevelTitleChecker(),
+    WARNINGS_PAGE_WITHOUT_TITLE  : checker.NoTitleChecker(),
+    WARNING_2nd_LEVEL_TITLE_FROM_LIST  : checker.SecondLevelTitleField(),
+    WARNING_TITLE_WITH_HTML_TAGS  : checker.HtmlTagsInTitle(),
+    WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE  : checker.ItemTitleDiffPageTitle(),
+    WARNING_NO_NIKUD_IN_SEC_TITLE  : checker.NoNikudInSecTitle(),
+    WARNING_GERSHAIM_IN_MARE_MAKOM : checker.GershaimInMareMakom(),
+    WARNING_ERECH_BET_WRONG : checker.ErechBetWrong(),
+    WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE : checker.KtzarmarWithoutKtzarmarTemplate(),
+    WARNING_SEPARATED_HOMONIMIM : checker.HomonimimSeperated()
+}
 
-    if WARNING_PAGE_WITH_TEXT_BEFORE_DEF in issues:
-        warning_to_checker[WARNING_PAGE_WITH_TEXT_BEFORE_DEF] = checker.TextBeforeDefChecker()
-    if WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM in issues:
-        warning_to_checker[WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM] = checker.NonAcronymWithGereshChecker()
-    if WARNING_PAGE_ACRONYM_NO_GERSHAIM in issues:
-        warning_to_checker[WARNING_PAGE_ACRONYM_NO_GERSHAIM] = checker.AcronymWithoutGereshChecker()
-    if WARNING_PAGE_WITH_FIRST_LEVEL_TITLE in issues:
-        warning_to_checker[WARNING_PAGE_WITH_FIRST_LEVEL_TITLE] = checker.FirstLevelTitleChecker()
-    if WARNINGS_PAGE_WITHOUT_TITLE in issues:
-        warning_to_checker[WARNINGS_PAGE_WITHOUT_TITLE] = checker.NoTitleChecker()
-    if WARNING_GERSHAIM_IN_MARE_MAKOM in issues:
-        warning_to_checker[WARNING_GERSHAIM_IN_MARE_MAKOM] = checker.GershaimInMareMakom()
-
-warning_to_item_checker = {}
+page_warnings = [ WARNING_PAGE_WITH_TEXT_BEFORE_DEF,
+                  WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM,
+                  WARNING_PAGE_ACRONYM_NO_GERSHAIM,
+                  WARNING_PAGE_WITH_FIRST_LEVEL_TITLE,
+                  WARNINGS_PAGE_WITHOUT_TITLE,
+                  WARNING_GERSHAIM_IN_MARE_MAKOM ]
 
 
 # In wikimilon we might more than one entry in each dictionary value.
@@ -93,48 +101,23 @@ warning_to_item_checker = {}
 # the checkers in this list need to get the parsed pages to the word entry , so not the text of the whole page but
 # only on the entry level.
 
-def fill_warning_to_item_checker(issues):
-    if len(issues) == 0:
-        warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()
-        warning_to_item_checker[WARNING_TITLE_WITH_HTML_TAGS] = checker.HtmlTagsInTitle()
-        warning_to_item_checker[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = checker.ItemTitleDiffPageTitle()
-        warning_to_item_checker[WARNING_NO_NIKUD_IN_SEC_TITLE] = checker.NoNikudInSecTitle()
-        warning_to_item_checker[WARNING_PAGE_WITHOUT_GREMMER_BOX] = checker.NoGremmerBoxChecker()
-        warning_to_item_checker[WARNING_ERECH_BET_WRONG] = checker.ErechBetWrong()
-        warning_to_item_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
-        warning_to_item_checker[WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE] = checker.KtzarmarWithoutKtzarmarTemplate()
-        warning_to_item_checker[WARNING_SEPARATED_HOMONIMIM] = checker.HomonimimSeperated()
-    else:
-        if WARNING_2nd_LEVEL_TITLE_FROM_LIST in issues:
-            warning_to_item_checker[WARNING_2nd_LEVEL_TITLE_FROM_LIST] = checker.SecondLevelTitleField()
-        if WARNING_TITLE_WITH_HTML_TAGS in issues:    
-            warning_to_item_checker[WARNING_TITLE_WITH_HTML_TAGS] = checker.HtmlTagsInTitle()
-        if WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE in issues:
-            warning_to_item_checker[WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE] = checker.ItemTitleDiffPageTitle()
-        if WARNING_NO_NIKUD_IN_SEC_TITLE in issues:
-            warning_to_item_checker[WARNING_NO_NIKUD_IN_SEC_TITLE] = checker.NoNikudInSecTitle()
-        if WARNING_PAGE_WITHOUT_GREMMER_BOX in issues:
-            warning_to_item_checker[WARNING_PAGE_WITHOUT_GREMMER_BOX] = checker.NoGremmerBoxChecker()
-        if WARNING_ERECH_BET_WRONG in issues:
-            warning_to_item_checker[WARNING_ERECH_BET_WRONG] = checker.ErechBetWrong()
-        if WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER in issues:
-            warning_to_item_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
-        if WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE in issues:
-            warning_to_item_checker[WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE] = checker.KtzarmarWithoutKtzarmarTemplate()
-        if WARNING_SEPARATED_HOMONIMIM in issues:
-            warning_to_item_checker[WARNING_SEPARATED_HOMONIMIM] = checker.HomonimimSeperated()
+item_warnings = [ WARNING_2nd_LEVEL_TITLE_FROM_LIST,
+                  WARNING_TITLE_WITH_HTML_TAGS,
+                  WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE,
+                  WARNING_NO_NIKUD_IN_SEC_TITLE,
+                  WARNING_PAGE_WITHOUT_GREMMER_BOX,
+                  WARNING_ERECH_BET_WRONG,
+                  WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER,
+                  WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE,
+                  WARNING_SEPARATED_HOMONIMIM]
 
+field_warnings = [WARNING_PAGE_WITH_INVALID_FIELD,
+                  WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER]
+
+warning_to_page_checker  = {}
+warning_to_item_checker  = {}
 warning_to_field_checker = {}
 
-def fill_warning_to_field_checker(issues):
-    if len(issues) == 0:
-        warning_to_field_checker[WARNING_PAGE_WITH_INVALID_FIELD] = checker.InvalidFieldItemChecker()
-        warning_to_field_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
-    else:
-        if WARNING_PAGE_WITH_INVALID_FIELD in issues:
-            warning_to_field_checker[WARNING_PAGE_WITH_INVALID_FIELD] = checker.InvalidFieldItemChecker()
-        if WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER in issues:
-            warning_to_field_checker[WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER] = checker.InvalidFieldOrderItemChecker()
 
 def check_part(page_title,title,part_text):
 
@@ -172,7 +155,7 @@ def check_page(site, page_title, page_text):
     # if there is no need for detailed description and it is enough to put link to the page, the list will be empty
     warnings = collections.defaultdict(list)
 
-    for key, value in warning_to_checker.items():
+    for key, value in warning_to_page_checker.items():
         value.reset_state()
     for key, value in warning_to_item_checker.items():
         value.reset_state()
@@ -183,7 +166,7 @@ def check_page(site, page_title, page_text):
         print("got SHORESH!! %s" % page_title)
         return warnings
 
-    for key, value in warning_to_checker.items():
+    for key, value in warning_to_page_checker.items():
         if value.rule_break_found(page_title,'',page_text,PAGE_TEXT_PART.WHOLE_PAGE):
             warnings[key] = []
 
@@ -228,6 +211,18 @@ def main(args):
     print(args)
     issues_to_search = [k for k,v in warning_to_code.items() if v in args.issues]
 
+    global warning_to_page_checker
+    global warning_to_item_checker
+    global warning_to_field_checker
+
+    warning_to_page_checker  = {k:warnings_to_checker2[k] for k in issues_to_search if k in page_warnings}
+    warning_to_item_checker  = {k:warnings_to_checker2[k] for k in issues_to_search if k in item_warnings}
+    warning_to_field_checker = {k:warnings_to_checker2[k] for k in issues_to_search if k in field_warnings}
+
+    print(warning_to_page_checker)
+    print(warning_to_item_checker)
+    print(warning_to_field_checker)
+
     gen = None
     if args.article:
         article = args.article[0]
@@ -251,9 +246,6 @@ def main(args):
 
 
 
-    fill_warning_to_checker(issues_to_search)
-    fill_warning_to_item_checker(issues_to_search)
-    fill_warning_to_field_checker(issues_to_search)
 
     for page in gen:
         try:
