@@ -13,6 +13,7 @@ import re
 import sys
 import hewiktionary
 from hewiktionary import titles_to_order
+import argparse
 
 def split_parts(page_text):
     
@@ -71,9 +72,7 @@ def fix_part2(part_text):
     fields_not_from_known_list  = {}
     fields = re.compile("(===[^=\n\r\v\f]+===\s*\n)",re.MULTILINE).split(part_text)
 
-    for idx,field in fields:
-        # tit is one for the section title
-
+    for idx,field in enumerate(fields):
         section_title =  re.compile("===\s*([^=]+)\s*===\s*\n").search(field)
         if section_title:
             section_title = section_title.group(1).strip()
@@ -81,33 +80,34 @@ def fix_part2(part_text):
             if section_title in titles_to_order:
                 fields_from_known_list_to_sort += [[fields[idx],fields[idx+1],section_title]]#add the section title, the section text and the the title itsel (for sorting)
             else:
-                fields_not_from_known_list[idx]  = [fields[idx],fields[idx+1]]
-
-
+                fields_not_from_known_list[idx//2]  = [fields[idx],fields[idx+1]]
 
     fields_from_known_list_to_sort.sort(key=cmp_to_key(cmp))# It modifies the list in-place (and returns None to avoid confusion)
-    final = [None] * (len(fields)-1)
-    for key in list(fields_not_from_known_list.keys()):
-        f = fields_not_from_known_list[key] 
-        final[2*key] = f[0]
-        final[2*key+1] = f[1]
+    final = []
 
     fiter = iter(fields_from_known_list_to_sort)
-
-    for idx in range(len(fields)-1):
+    #print(fields_not_from_known_list)
+    for idx in range(len(fields)//2):
+        #print("======= %d ==========" % idx)
         if idx in fields_not_from_known_list:
+            #print("======= DCIT ==========")
+            #print(fields_not_from_known_list[idx])
             final.append(fields_not_from_known_list[idx][0])
             final.append(fields_not_from_known_list[idx][1])
         else:
-            final.append(next(fiter))
-            final.append(next(fiter))
+            #print("======= triple ==========")
+            triple = next(fiter)
+
+            #print(triple)
+            final.append(triple[0])
+            final.append(triple[1])
+        if(not final[-1].endswith("\n")):
+            final[-1] +=  "\n"
 
     final = [fields[0]]+final
 
+    print(final)
     final = ''.join(final)
-    if not final.endswith('\n'):
-        print('add newline to final')
-        final += '\n'
     for cat in categories:
         final += cat+'\n'
     return final
@@ -118,10 +118,9 @@ def fix_page(page_title, page_text):
     page_parts = split_parts(page_text)
 
     # the first part will always be either an empty string or a string before the first definition (like {{לשכתוב}})
-    final = [def_list.pop(0)]
+    final = [page_parts.__next__()]
 
     for part in page_parts:
-
         if not re.compile("(^==[^=]+==\s*\n)",re.MULTILINE).match(part):
             final.append(fix_part2(part))
         else:
@@ -138,19 +137,22 @@ def main(args):
     parser = argparse.ArgumentParser(description="reorder subsection titles according to predefined order")
     parser.add_argument("--article",nargs=1, required=False)
     parser.add_argument("-always",action='store_false', required=False)
+    #parser.add_argument("-limit",nargs=1, required=False)
+
     args, factory_args = parser.parse_known_args(local_args)
 
 
+    print(args)
+
     if args.article:
-        page = pywikibot.Page(site, args.article)
+        article = args.article[0]
+        page = pywikibot.Page(site, article)
         page.text = fix_page(page.title(),page.text)
 
         if page.text:
             page.save("בוט שמסדר סעיפים מדרגה 3 בסדר הנכון")
 
     else:
-        gen_factory = pagegenerators.GeneratorFactory()
-        site = pywikibot.Site('he', 'wiktionary')
         maintain_page = pywikibot.Page(site, "ויקימילון:תחזוקה/דפים_עם_סעיפים_שאינם_בסדר_הנכון")
 
         for page in maintain_page.linkedPages():
