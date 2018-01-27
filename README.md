@@ -21,6 +21,8 @@ They ran periodically by [Dafna3.bot](https://he.wiktionary.org/wiki/%D7%9E%D7%A
 
 * **link_words_recording.py**, a bot that scans audio files in [commons](https://commons.wikimedia.org/wiki/Category:Hebrew_pronunciation) and add them to the lexeme definition in hewiktionary.
 
+* **link_words_recording_from_list.py** same as **link_words_recording.py** but read the list of files from a given file. See the file audio_tet.txt for an example.
+
 * **upload.py**, a bot that loads all files in a given directory to commons to the [Hebrew pronunciation](https://commons.wikimedia.org/wiki/Category:Hebrew_pronunciation) category. You should give it the name of the directory of the audios. For example:
 
 `python3 upload.py words_tet/ -always -ignorewarn exists`

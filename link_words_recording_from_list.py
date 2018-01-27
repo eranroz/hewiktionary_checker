@@ -15,6 +15,15 @@ class TEMPLATE_STATE:
     END = 3
     NEXT_PART = 4
 
+class PagesFromListGenerator:
+    def __init__(self, site,file):
+        self.site = site
+        self.file = open(file, 'r')
+    def __iter__(self):
+        for line in self.file:
+            yield pywikibot.Page(self.site,title = line)
+
+
 class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
 
     def treat_page(self):
@@ -93,34 +102,22 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
 def main(args):
 
     site = pywikibot.Site('commons', 'commons')
-    cat = pywikibot.Category(site,'Category:Hebrew_pronunciation')
-    gen = pagegenerators.CategorizedPageGenerator(cat)
-    global_args  = []
 
-    limit = 0
-    article = None
+    local_args = pywikibot.handle_args(args)
 
-    local_args = pywikibot.handle_args(global_args)
-    for arg in args:
-        m = re.compile('^-limit:([0-9]+)$').match(arg)
-        a = re.compile('^-article:(.+)$').match(arg)
-        if m:
-            limit = int(m.group(1))
-        elif a:
-            article = a.group(1)
-        else:
-            global_args.append(arg)
+    file = ''
+    try:
+        file =  local_args[1]
 
+    except:
+        print("You should add a file with a list of audios in commons - see audio_tet.txt for an example")
+        sys.exit(1)
 
-    if article:
-        gen = [pywikibot.Page(site, article)]
-        gen = pagegenerators.PreloadingGenerator(gen)
-
+    gen = PagesFromListGenerator(site,file)
     bot = HebrewWordsRecordsLinkerBot(generator = gen)
-    bot.run()  
+    bot.run()
 
     print('_____________________DONE____________________')
-    
 
 if __name__ == "__main__":
     main(sys.argv)
