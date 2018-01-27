@@ -44,8 +44,9 @@ mylang = 'en'
 #usernames['wikidata']['wikidata'] = u'dafna3.bot'
 #usernames['wikidata']['test'] = u'dafna3.bot'
 usernames['wiktionary']['he'] = u'dafna3.bot'
-usernames['wiktionary']['en'] = u'dafna3.bot'
-usernames['wiktionary']['sv'] = u'dafna3.bot'
+#usernames['wiktionary']['en'] = u'dafna3.bot'
+#usernames['wiktionary']['sv'] = u'dafna3.bot'
+usernames['commons']['commons'] = u'dafna3.bot'
 # ############# LOGFILE SETTINGS ##############
 
 # Defines for which scripts a logfile should be enabled. Logfiles will be
