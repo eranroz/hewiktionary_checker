@@ -13,11 +13,15 @@ They ran periodically by [Dafna3.bot](https://he.wiktionary.org/wiki/%D7%9E%D7%A
 
 ## Scripts:
 
-* *section_title_replacer_bot.py* - a bot that scans all articles in the list in [ויקימילון:תחזוקה/דפים_עם_סעיפים_שאינם_מהרשימה_הסגורה](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%A1%D7%A2%D7%99%D7%A4%D7%99%D7%9D_%D7%A9%D7%90%D7%99%D7%A0%D7%9D_%D7%9E%D7%94%D7%A8%D7%A9%D7%99%D7%9E%D7%94_%D7%94%D7%A1%D7%92%D7%95%D7%A8%D7%94) and replaces the wrong subsection title with the right one if it can.
+* **section_title_replacer_bot.py**, a bot that scans all articles in the list in [ויקימילון:תחזוקה/דפים_עם_סעיפים_שאינם_מהרשימה_הסגורה](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%A1%D7%A2%D7%99%D7%A4%D7%99%D7%9D_%D7%A9%D7%90%D7%99%D7%A0%D7%9D_%D7%9E%D7%94%D7%A8%D7%A9%D7%99%D7%9E%D7%94_%D7%94%D7%A1%D7%92%D7%95%D7%A8%D7%94) and replaces the wrong subsection title with the right one if it can.
 
-* *rule_checker.py* - a bot that checks all different issues and produce a list of article to each issue.
+* **fix_bad_order_fields.py**, a bot that reorder the subsections in each lexme according to the agreed order, it scans articles in the list in [ויקימילון:תחזוקה/דפים עם סעיפים שאינם בסדר הנכון](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%A1%D7%A2%D7%99%D7%A4%D7%99%D7%9D_%D7%A9%D7%90%D7%99%D7%A0%D7%9D_%D7%91%D7%A1%D7%93%D7%A8_%D7%94%D7%A0%D7%9B%D7%95%D7%9F)
 
-* *fix_bad_order_fields.py* - a bot that reorder the subsections in each lexme according to the agreed order.  
+* **sec_tite_to_third_bot.py**, a bot that replaces the heading from second level to third level for subsections titles. It scans the articles in the list in [ויקימילון:תחזוקה/דפים עם כותרת סעיף מסדר 2](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%9B%D7%95%D7%AA%D7%A8%D7%AA_%D7%A1%D7%A2%D7%99%D7%A3_%D7%9E%D7%A1%D7%93%D7%A8_2)
+
+* **link_words_recording.py**, a bot that scans audio files in [commons](https://commons.wikimedia.org/wiki/Category:Hebrew_pronunciation) and add them to the lexeme definition in hewiktionary.
+
+* **rule_checker.py** - a bot that checks all different issues and produce a list of article to each issue.
 
 Run with `-h` to list possible issues codes to check and run with `--issues <code1> <code2> <code3> ..` to check only the listed issues.
 
@@ -43,7 +47,7 @@ The list of issues:
 
 - [lexeme title without nikud](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%9B%D7%95%D7%AA%D7%A8%D7%AA_%D7%9E%D7%A9%D7%A0%D7%94_%D7%9C%D7%90_%D7%9E%D7%A0%D7%95%D7%A7%D7%93%D7%AA), code is `nnst`
 
-- [page without a title](https://he.wiktionary.org/wiki/%D7%A1%D7%A4%D7%95%D7%A8_%D7%A7%D7%A6%D7%A8), code is `wt`
+- [page without a title](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%9C%D7%9C%D7%90_%D7%9B%D7%95%D7%AA%D7%A8%D7%AA), code is `wt`
 
 - [text before first lexeme](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%98%D7%A7%D7%A1%D7%98_%D7%9C%D7%A4%D7%A0%D7%99_%D7%94%D7%94%D7%A2%D7%A8%D7%94_%D7%94%D7%A8%D7%90%D7%A9%D7%95%D7%A0%D7%94), code is `tbd`
 
