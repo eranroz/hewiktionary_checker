@@ -23,34 +23,35 @@ Run with `-h` to list possible issues codes to check and run with `--issues <cod
 
 The list of issues:
 
-- wrong order of sections, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%A1%D7%A2%D7%99%D7%A4%D7%99%D7%9D_%D7%A9%D7%90%D7%99%D7%A0%D7%9D_%D7%91%D7%A1%D7%93%D7%A8_%D7%94%D7%A0%D7%9B%D7%95%D7%9F - code is `fwo`
+- [wrong order of sections](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%A1%D7%A2%D7%99%D7%A4%D7%99%D7%9D_%D7%A9%D7%90%D7%99%D7%A0%D7%9D_%D7%91%D7%A1%D7%93%D7%A8_%D7%94%D7%A0%D7%9B%D7%95%D7%9F), code is `fwo`
 
-- a stub without the stub template, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%A7%D7%A6%D7%A8%D7%9E%D7%A8_%D7%91%D7%9C%D7%99_%D7%AA%D7%91%D7%A0%D7%99%D7%AA_%D7%A7%D7%A6%D7%A8%D7%9E%D7%A8 - code is `kwkt`
+- [a stub without the stub template](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%A7%D7%A6%D7%A8%D7%9E%D7%A8_%D7%91%D7%9C%D7%99_%D7%AA%D7%91%D7%A0%D7%99%D7%AA_%D7%A7%D7%A6%D7%A8%D7%9E%D7%A8), code is `kwkt`
 
-- homonyms separated, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%94%D7%95%D7%9E%D7%95%D7%A0%D7%99%D7%9E%D7%99%D7%9D_%D7%9E%D7%95%D7%A4%D7%A8%D7%93%D7%99%D7%9D - code is `sh`
+- [homonyms separated](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%94%D7%95%D7%9E%D7%95%D7%A0%D7%99%D7%9E%D7%99%D7%9D_%D7%9E%D7%95%D7%A4%D7%A8%D7%93%D7%99%D7%9D), code is `sh`
 
-- sections titles not from the predefined list, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%A1%D7%A2%D7%99%D7%A4%D7%99%D7%9D_%D7%A9%D7%90%D7%99%D7%A0%D7%9D_%D7%9E%D7%94%D7%A8%D7%A9%D7%99%D7%9E%D7%94_%D7%94%D7%A1%D7%92%D7%95%D7%A8%D7%94 - code is `if`
+- [sections titles not from the predefined list](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%A1%D7%A2%D7%99%D7%A4%D7%99%D7%9D_%D7%A9%D7%90%D7%99%D7%A0%D7%9D_%D7%9E%D7%94%D7%A8%D7%A9%D7%99%D7%9E%D7%94_%D7%94%D7%A1%D7%92%D7%95%D7%A8%D7%94), code is `if`
 
-- section title heading is 2 level instead of 3,  https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%9B%D7%95%D7%AA%D7%A8%D7%AA_%D7%A1%D7%A2%D7%99%D7%A3_%D7%9E%D7%A1%D7%93%D7%A8_2 - code is `2ltfl`
+- [section title heading is 2 level instead of 3]( https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%9B%D7%95%D7%AA%D7%A8%D7%AA_%D7%A1%D7%A2%D7%99%D7%A3_%D7%9E%D7%A1%D7%93%D7%A8_2), code is `2ltfl`
 
-- acronyms without gershaim, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%A8%D7%90%D7%A9%D7%99_%D7%AA%D7%99%D7%91%D7%95%D7%AA_%D7%97%D7%A1%D7%A8%D7%99_%D7%92%D7%A8%D7%A9%D7%99%D7%99%D7%9D - code is `ang`
+- [acronyms without gershaim](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%A8%D7%90%D7%A9%D7%99_%D7%AA%D7%99%D7%91%D7%95%D7%AA_%D7%97%D7%A1%D7%A8%D7%99_%D7%92%D7%A8%D7%A9%D7%99%D7%99%D7%9D), code is `ang`
 
-- lexeme tile without Nikud is different from the article title, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%91%D7%94%D7%9D_%D7%9B%D7%95%D7%AA%D7%A8%D7%AA_%D7%9E%D7%A1%D7%93%D7%A8_2_%D7%9C%D7%9C%D7%90_%D7%A0%D7%99%D7%A7%D7%95%D7%93_%D7%A9%D7%95%D7%A0%D7%94_%D7%9E%D7%A9%D7%9D_%D7%94%D7%93%D7%A3 - code is `stdpt`
+- [lexeme tile without Nikud is different from the article title](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%91%D7%94%D7%9D_%D7%9B%D7%95%D7%AA%D7%A8%D7%AA_%D7%9E%D7%A1%D7%93%D7%A8_2_%D7%9C%D7%9C%D7%90_%D7%A0%D7%99%D7%A7%D7%95%D7%93_%D7%A9%D7%95%D7%A0%D7%94_%D7%9E%D7%A9%D7%9D_%D7%94%D7%93%D7%A3), code is `stdpt`
 
-- bible citation with gershaim in reference, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%A6%D7%99%D7%98%D7%95%D7%98_%D7%9E%D7%94%D7%AA%D7%A0%D7%9A_%D7%A2%D7%9D_%D7%92%D7%A8%D7%A9%D7%99%D7%99%D7%9D_%D7%91%D7%9E%D7%A8%D7%90%D7%99_%D7%9E%D7%A7%D7%95%D7%9D - code is `gmm`
+- [bible citation with gershaim in reference](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%A6%D7%99%D7%98%D7%95%D7%98_%D7%9E%D7%94%D7%AA%D7%A0%D7%9A_%D7%A2%D7%9D_%D7%92%D7%A8%D7%A9%D7%99%D7%99%D7%9D_%D7%91%D7%9E%D7%A8%D7%90%D7%99_%D7%9E%D7%A7%D7%95%D7%9D), code is `gmm`
 
-- gremmer box is missing, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%97%D7%A1%D7%A8%D7%99_%D7%A0%D7%99%D7%AA%D7%95%D7%97_%D7%93%D7%A7%D7%93%D7%95%D7%A7%D7%99 - code is `wgb`
+- [gremmer box is missing](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%97%D7%A1%D7%A8%D7%99_%D7%A0%D7%99%D7%AA%D7%95%D7%97_%D7%93%D7%A7%D7%93%D7%95%D7%A7%D7%99), code is `wgb`
 
-- lexeme title without nikud, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%9B%D7%95%D7%AA%D7%A8%D7%AA_%D7%9E%D7%A9%D7%A0%D7%94_%D7%9C%D7%90_%D7%9E%D7%A0%D7%95%D7%A7%D7%93%D7%AA - code is `nnst`
+- [lexeme title without nikud](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%9B%D7%95%D7%AA%D7%A8%D7%AA_%D7%9E%D7%A9%D7%A0%D7%94_%D7%9C%D7%90_%D7%9E%D7%A0%D7%95%D7%A7%D7%93%D7%AA), code is `nnst`
 
-- page without a title, https://he.wiktionary.org/wiki/%D7%A1%D7%A4%D7%95%D7%A8_%D7%A7%D7%A6%D7%A8 - code is `wt`
+- [page without a title](https://he.wiktionary.org/wiki/%D7%A1%D7%A4%D7%95%D7%A8_%D7%A7%D7%A6%D7%A8), code is `wt`
 
-- text before first lexeme, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%98%D7%A7%D7%A1%D7%98_%D7%9C%D7%A4%D7%A0%D7%99_%D7%94%D7%94%D7%A2%D7%A8%D7%94_%D7%94%D7%A8%D7%90%D7%A9%D7%95%D7%A0%D7%94 - code is `tbd`
+- [text before first lexeme](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%98%D7%A7%D7%A1%D7%98_%D7%9C%D7%A4%D7%A0%D7%99_%D7%94%D7%94%D7%A2%D7%A8%D7%94_%D7%94%D7%A8%D7%90%D7%A9%D7%95%D7%A0%D7%94), code is `tbd`
 
-- wrong subsection, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%A2%D7%A8%D7%9A_%D7%9E%D7%A9%D7%A0%D7%99_%D7%9C%D7%90_%D7%AA%D7%99%D7%A7%D7%A0%D7%99 - code is `ebw`
+- [wrong subsection](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%A2%D7%A8%D7%9A_%D7%9E%D7%A9%D7%A0%D7%99_%D7%9C%D7%90_%D7%AA%D7%99%D7%A7%D7%A0%D7%99), code is `ebw`
 
-- html tags inside sections, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%AA%D7%92%D7%99%D7%95%D7%AA_%D7%94%D7%99%D7%A4%D7%A8-%D7%98%D7%A7%D7%A1%D7%98_%D7%91%D7%9B%D7%95%D7%AA%D7%A8%D7%AA - code is `ht`
+- [html tags inside sections](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%AA%D7%92%D7%99%D7%95%D7%AA_%D7%94%D7%99%D7%A4%D7%A8-%D7%98%D7%A7%D7%A1%D7%98_%D7%91%D7%9B%D7%95%D7%AA%D7%A8%D7%AA), code is `ht`
 
-- first heading for title, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%9B%D7%95%D7%AA%D7%A8%D7%AA_%D7%9E%D7%93%D7%A8%D7%92%D7%94_%D7%A8%D7%90%D7%A9%D7%95%D7%A0%D7%94 - code is `flt`
+- [first heading for title](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%A2%D7%9D_%D7%9B%D7%95%D7%AA%D7%A8%D7%AA_%D7%9E%D7%93%D7%A8%D7%92%D7%94_%D7%A8%D7%90%D7%A9%D7%95%D7%A0%D7%94), code is `flt`
 
-- default comment not erased, https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%91%D7%94%D7%9D_%D7%9C%D7%90_%D7%A0%D7%9E%D7%97%D7%A7%D7%94_%D7%94%D7%94%D7%A2%D7%A8%D7%94_%D7%94%D7%93%D7%99%D7%A4%D7%95%D7%9C%D7%98%D7%99%D7%91%D7%99%D7%AA - code is `c`
+- [default comment not erased](https://he.wiktionary.org/wiki/%D7%95%D7%99%D7%A7%D7%99%D7%9E%D7%99%D7%9C%D7%95%D7%9F:%D7%AA%D7%97%D7%96%D7%95%D7%A7%D7%94/%D7%93%D7%A4%D7%99%D7%9D_%D7%91%D7%94%D7%9D_%D7%9C%D7%90_%D7%A0%D7%9E%D7%97%D7%A7%D7%94_%D7%94%D7%94%D7%A2%D7%A8%D7%94_%D7%94%D7%93%D7%99%D7%A4%D7%95%D7%9C%D7%98%D7%99%D7%91%D7%99%D7%AA), code is `c`
+  
