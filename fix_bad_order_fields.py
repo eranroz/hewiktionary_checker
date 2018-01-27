@@ -23,6 +23,8 @@ def split_parts(page_text):
     # the paranthess in the regex will add the delimiter 
     # see http://stackoverflow.com/questions/2136556/in-python-how-do-i-split-a-string-and-keep-the-separators
 
+
+    #this regex cannot be replaced eith lexeme_title_regex bacause the \n in the end is needed
     parts = re.compile("(^==[^=]+==\s*\n)",re.MULTILINE).split(page_text)
 
     for part in parts:
@@ -106,7 +108,7 @@ def fix_part2(part_text):
 
     final = [fields[0]]+final
 
-    print(final)
+    #print(final)
     final = ''.join(final)
     for cat in categories:
         final += cat+'\n'
@@ -121,7 +123,7 @@ def fix_page(page_title, page_text):
     final = [page_parts.__next__()]
 
     for part in page_parts:
-        if not re.compile("(^==[^=]+==\s*\n)",re.MULTILINE).match(part):
+        if not hewiktionary.lexeme_title_regex.match(part):
             final.append(fix_part2(part))
         else:
             final.append(part)

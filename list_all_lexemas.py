@@ -24,7 +24,8 @@ from pywikibot.xmlreader import XmlDump
 import requests
 import sys
 import checker
-            
+import hewiktionary
+
 def get_dump():
     """
     This function downloads teh latest wiktionary dump
@@ -50,10 +51,11 @@ def check_page(site, page_title, page_text):
 
     if re.compile(u'[a-zA-Z"\.]').search(page_title):
         return []
-    titles = re.compile("(^==([^=]+)==\s*$)",re.MULTILINE).findall(page_text)
+
+    titles = hewiktionary.lexeme_title_regex_grouped.findall(page_text)
     lexemas = []
     for t in titles:
-        lexemas.append(t[1])
+        lexemas.append(t)
 
 
     return lexemas

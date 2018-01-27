@@ -46,7 +46,7 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
                     final += [first]
                 state = TEMPLATE_STATE.BEFORE_START
                 for part in parts_gen:
-                    sec_word = re.compile("^==\s*([^=]+)\s*==\s*\n*").search(part[0]).group(1).strip()
+                    sec_word = lexeme_title_regex_grouped.search(part[0]).group(1).strip()
                     sec_word = re.sub('\u200f','',sec_word)
 
                     if(sec_word == word):

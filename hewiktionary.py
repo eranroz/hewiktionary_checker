@@ -11,6 +11,11 @@ KATEGORIA_PITGAMI_REGEX = re.compile(u'\\[\\[\u05e7\u05d8\u05d2\u05d5\u05e8\u05d
 
 GERSHAIM_GERESH_REGEX = re.compile('["״\'\׳]')
 
+lexeme_title_regex = re.compile("^==[^=]+==\s*$",re.MULTILINE)
+
+lexeme_title_regex_grouped = re.compile("^==([^=]+)==\s*$",re.MULTILINE)
+
+
 GIZRON = "גיזרון"
 MAKOR = "מקור"
 PARSHANIM = "פרשנים מפרשים"

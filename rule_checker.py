@@ -118,7 +118,6 @@ warning_to_page_checker  = {}
 warning_to_item_checker  = {}
 warning_to_field_checker = {}
 
-
 def check_part(page_title,title,part_text):
 
     warnings = collections.defaultdict(list)
@@ -176,7 +175,7 @@ def check_page(site, page_title, page_text):
     parts_gen.__next__()
 
     for part in parts_gen:
-        w = check_part(page_title,re.compile("^==\s*([^=]+)\s*==\s*\n*").search(part[0]).group(1).strip() ,part[1])
+        w = check_part(page_title,hewiktionary.lexeme_title_regex_grouped.search(part[0]).group(1).strip() ,part[1])
         for key in w:
                 warnings[key].extend(w[key])
     return warnings

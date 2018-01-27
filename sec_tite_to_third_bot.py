@@ -15,11 +15,10 @@ class SectionTitleLvl2ndTo3rdBot(pywikibot.CurrentPageBot):
         """Load the given page, do some changes, and save it."""
         new_page_text = self.current_page.text
 
-        part_titles = re.findall("^==[^=\n]+==[ \r\t]*$",self.current_page.text,re.MULTILINE)
+        part_titles = hewiktionary.lexeme_title_regex.findall(self.current_page.text)
 
         for part_title in part_titles:
-
-            title = re.compile("==\s*([^=]+)\s*==").search(part_title).group(1).strip()
+            title = hewiktionary.lexeme_title_regex_grouped.search(part_title).group(1).strip()
             if title in hewiktionary.titles_list:
                 new_page_text = re.sub('==\s*'+title+'\s*==','==='+title+'===',new_page_text,re.MULTILINE)
 

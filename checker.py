@@ -37,7 +37,7 @@ class TextBeforeDefChecker(Checker):
     
 class NoTitleChecker(Checker):
     def rule_break_found(self,page_title,text_title,text,text_portion):
-        text_before = re.compile("^==[^=]+==\s*$",re.MULTILINE).search(text)
+        text_before = hewiktionary.lexeme_title_regex.search(text)
         if not text_before:
             return True
         return False
