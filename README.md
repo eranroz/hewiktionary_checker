@@ -4,6 +4,7 @@ The scripts are based on [pywikibot](https://www.mediawiki.org/wiki/Manual:Pywik
 
 They ran periodically by [Dafna3.bot](https://he.wiktionary.org/wiki/%D7%9E%D7%A9%D7%AA%D7%9E%D7%A9:Dafna3.bot)   
 
+Last contributaions [here](https://he.wiktionary.org/wiki/%D7%9E%D7%99%D7%95%D7%97%D7%93:%D7%AA%D7%A8%D7%95%D7%9E%D7%95%D7%AA/Dafna3.bot).
 ### Argument available to most scripts:
 
 * `-article:<article name>` - run the script on a specific article instead of scanning all articles.
