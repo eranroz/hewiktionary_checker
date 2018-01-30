@@ -1,4 +1,3 @@
-
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
@@ -8,6 +7,7 @@ from pywikibot import pagegenerators
 import re
 import sys
 import hewiktionary
+import argparse
 
 class SectionTitleLvl2ndTo3rdBot(pywikibot.CurrentPageBot):
 
@@ -28,32 +28,34 @@ class SectionTitleLvl2ndTo3rdBot(pywikibot.CurrentPageBot):
 
 def main(args):
 
-    site = pywikibot.Site('he', 'wiktionary')    
+    local_args = pywikibot.handle_args(args)
+    site = pywikibot.Site('he', 'wiktionary')
     maintain_page = pywikibot.Page(site, "ויקימילון:תחזוקה/דפים_עם_כותרת_סעיף_מסדר_2")
 
-    global_args  = []
+    genFactory = pagegenerators.GeneratorFactory()
+    options = {}
 
-    limit = 0
-    article = None
+    parser = argparse.ArgumentParser(description="move subsections titles from headin level 2 to heading level 3",epilog="Options include also global pywikibot options and all generators options")
+    parser.add_argument("--article",nargs=1, required=False)
+    parser.add_argument("-always",action='store_false', required=False)
+    args, factory_args = parser.parse_known_args(local_args)
 
-    for arg in args:
-        m = re.compile('^-limit:([0-9]+)$').match(arg)
-        a = re.compile('^-article:(.+)$').match(arg)
-        if m:
-            limit = int(m.group(1))
-        elif a:
-            article = a.group(1)
-        else:
-            global_args.append(arg)
+    options['always'] = args.always
 
-    local_args = pywikibot.handle_args(global_args)
+    for arg in factory_args:
+        genFactory.handleArg(arg)
 
-    if article:
+    genFactory.handleArg('-intersect')
+
+    if args.article:
+        article = args.article[0]
+        print(article[::-1])#the terminal shows hebrew left to write :(
         gen = [pywikibot.Page(site, article)]
         gen = pagegenerators.PreloadingGenerator(gen)
     else:
-        gen = pagegenerators.LinkedPageGenerator(maintain_page,total = limit, content = True)
+        gen = pagegenerators.LinkedPageGenerator(maintain_page, content = True)
 
+    gen = genFactory.getCombinedGenerator(gen)
 
     bot = SectionTitleLvl2ndTo3rdBot(generator = gen,site = site)
     bot.run()
