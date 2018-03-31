@@ -17,8 +17,10 @@ titles_replacer = {
 
     "דעת פרשנים" : hewiktionary.PARSHANIM,
     "צרופים" :  hewiktionary.TSERUFIM,
-    "ביטויים וצרופים" :  hewiktionary.TSERUFIM,
-    "צירופים וביטויים" :  hewiktionary.TSERUFIM,
+    "ביטויים וצרופים" : hewiktionary.TSERUFIM,
+    "צירופים וביטויים" : hewiktionary.TSERUFIM,
+    "ביטויים וצירופים" : hewiktionary.TSERUFIM,
+    "ביטויים נרדפים" : hewiktionary.KROVIM,
     "מילים קרובות" : hewiktionary.NIRDAFOT,
     "מלים נרדפות" : hewiktionary.NIRDAFOT,
     "נרדפות" : hewiktionary.NIRDAFOT,
@@ -27,11 +29,15 @@ titles_replacer = {
     "תרגומים" : hewiktionary.TERGUM,
     "תירגום" : hewiktionary.TERGUM,
     "תירגומים" : hewiktionary.TERGUM,
+    "תרגומים" :  hewiktionary.TERGUM,
     "ראה גם" : hewiktionary.REOGAM,
     "הערת שוליים" : hewiktionary.SHULAIM,
     "קשורים חיצוניים" : hewiktionary.KISHURIM,
+    "קישורים חיצונים" : hewiktionary.KISHURIM,
     "מקורות" : hewiktionary.SIMUCHIN,
     "גזרון" : hewiktionary.GIZRON
+    "אטימולוגיה" : hewiktionary.GIZRON
+#    "הערה" : hewiktionary.MEIDA # this probably relates to הערות שלויים
 }
 
 class SectionTitleReplacerBot(pywikibot.CurrentPageBot):
