@@ -9,6 +9,8 @@ GERSHAIM_REGEX = re.compile('["״]')
 
 KATEGORIA_PITGAMI_REGEX = re.compile(u'\\[\\[\u05e7\u05d8\u05d2\u05d5\u05e8\u05d9\u05d4:.*(\u05e0\u05d9\u05d1\u05d9\u05dd|\u05d1\u05d9\u05d8\u05d5\u05d9\u05d9\u05dd|\u05e4\u05ea\u05d2\u05de\u05d9\u05dd).*\\]\\]')
 
+ALEF_TO_TAF_REGEX = re.compile('[\u05d0-\u05e0]')
+
 GERSHAIM_GERESH_REGEX = re.compile('["״\'\׳]')
 
 lexeme_title_regex = re.compile("^==[^=]+==\s*$",re.MULTILINE)
@@ -30,7 +32,6 @@ REOGAM = "ראו גם"
 KISHURIM = "קישורים חיצוניים"
 SIMUCHIN = "סימוכין"
 SHULAIM = "הערות שוליים"
-
 
 titles_to_order = {
 

@@ -14,19 +14,20 @@ python rule_checker.py -simulate -log:logrule.log -limit:5
 
 """
 
-import pywikibot
-from pywikibot import pagegenerators
 import re
 import os
-from pywikibot.xmlreader import XmlDump
+import collections
 import requests
 import sys
-import checker
-import hewiktionary
-from hewiktionary import PAGE_TEXT_PART
 import argparse
 from argparse import RawTextHelpFormatter
-import collections
+import pywikibot
+from pywikibot import pagegenerators
+from pywikibot.xmlreader import XmlDump
+import hewiktionary
+from hewiktionary import PAGE_TEXT_PART
+import checker
+
 
 WARNING_PAGE_WITH_INVALID_FIELD = 'דפים עם סעיפים שאינם מהרשימה הסגורה'
 WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER = 'דפים עם סעיפים שאינם בסדר הנכון'
@@ -226,9 +227,9 @@ def main(args):
     if args.article:
         article = args.article[0]
         gen = pagegenerators.PreloadingGenerator([pywikibot.Page(site, article)])
-    elif os.path.exists('hewiktionary-latest-pages-articles.xml.bz2'):
+    elif os.path.exists('hewiktionary-20180320-pages-meta-current.xml.bz2'):
         print('parsing dump')
-        all_wiktionary = XmlDump('hewiktionary-latest-pages-articles.xml.bz2').parse()  # open the dump and parse it.
+        all_wiktionary = XmlDump('hewiktionary-20180320-pages-meta-current.xml.bz2').parse()  # open the dump and parse it.
         print('end parsing dump')
 
         # filter only main namespace
@@ -239,6 +240,7 @@ def main(args):
         gen =  pagegenerators.AllpagesPageGenerator(site = site,includeredirects=False)#this is only namespace 0 by default
 
     gen = genFactory.getCombinedGenerator(gen)#combine with user args
+    gen =  pagegenerators.RegexFilterPageGenerator(gen,hewiktionary.ALEF_TO_TAF_REGEX) # scan only hebrew words
 
     # a dictionary where the key is the issue and the value is list of pages violates it
     pages_by_issues = collections.defaultdict(list)
@@ -268,7 +270,7 @@ def main(args):
         print ('found issue %s' % issue)
         report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % issue)
         report_content = 'סך הכל %s ערכים\n' % str(len(pages))
-        pages = sorted(pages)
+        pages.sort()
         report_content +=  '\n'.join(['%s' % p for p in pages])
         report_content += "\n\n[[קטגוריה: ויקימילון - תחזוקה]]"
         report_page.text = report_content
