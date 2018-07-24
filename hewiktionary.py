@@ -11,6 +11,7 @@ KATEGORIA_PITGAMI_REGEX = re.compile(u'\\[\\[\u05e7\u05d8\u05d2\u05d5\u05e8\u05d
 
 ALEF_TO_TAF_REGEX = re.compile('[\u05d0-\u05e0]')
 
+HEBREW_WORD_REGEX = re.compile('[\u0591-\u05f4]+')
 GERSHAIM_GERESH_REGEX = re.compile('["״\'\׳]')
 
 lexeme_title_regex = re.compile("^==[^=]+==\s*$",re.MULTILINE)

@@ -13,6 +13,21 @@ import sys
 import hewiktionary
 import argparse
 
+#GIZRON = "גיזרון"
+#MAKOR = "מקור"
+#PARSHANIM = "פרשנים מפרשים"
+#TSERUFIM = "צירופים"
+#NIGZAROT = "נגזרות"
+#NIRDAFOT = "מילים נרדפות"
+#KROVIM = "ביטויים קרובים"
+#NIGUDIM = "ניגודים"
+#TERGUM = "תרגום"
+#MEIDA = "מידע נוסף"
+#REOGAM = "ראו גם"
+#KISHURIM = "קישורים חיצוניים"
+#SIMUCHIN = "סימוכין"
+#SHULAIM = "הערות שוליים"
+
 titles_replacer = {
 
     "דעת פרשנים" : hewiktionary.PARSHANIM,
@@ -21,6 +36,7 @@ titles_replacer = {
     "צירופים וביטויים" : hewiktionary.TSERUFIM,
     "ביטויים וצירופים" : hewiktionary.TSERUFIM,
     "ביטויים נרדפים" : hewiktionary.KROVIM,
+    "ביטויים דומים" : hewiktionary.KROVIM,
     "מילים קרובות" : hewiktionary.NIRDAFOT,
     "מלים נרדפות" : hewiktionary.NIRDAFOT,
     "נרדפות" : hewiktionary.NIRDAFOT,
@@ -35,7 +51,7 @@ titles_replacer = {
     "קשורים חיצוניים" : hewiktionary.KISHURIM,
     "קישורים חיצונים" : hewiktionary.KISHURIM,
     "מקורות" : hewiktionary.SIMUCHIN,
-    "גזרון" : hewiktionary.GIZRON
+    "גזרון" : hewiktionary.GIZRON,
     "אטימולוגיה" : hewiktionary.GIZRON
 #    "הערה" : hewiktionary.MEIDA # this probably relates to הערות שלויים
 }

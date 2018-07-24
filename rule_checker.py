@@ -7,94 +7,91 @@ Use get_dump to get the full dump (for developing we are analyzing the full dump
 
 &params;
 
-Please type "rule_checker.py -help | more" if you can't read the top of the help.
-
-you  can run with 
-python rule_checker.py -simulate -log:logrule.log -limit:5
 
 """
 
 import re
 import os
-import collections
-import requests
 import sys
+import collections
 import argparse
-from argparse import RawTextHelpFormatter
 import pywikibot
+from enum import Enum
+
 from pywikibot import pagegenerators
 from pywikibot.xmlreader import XmlDump
 import hewiktionary
 from hewiktionary import PAGE_TEXT_PART
 import checker
 
+class HeWikiWarning(Enum):
 
-WARNING_PAGE_WITH_INVALID_FIELD = 'דפים עם סעיפים שאינם מהרשימה הסגורה'
-WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER = 'דפים עם סעיפים שאינם בסדר הנכון'
-WARNING_PAGE_WITH_COMMENT = 'דפים בהם לא נמחקה ההערה הדיפולטיבית'
-WARNING_PAGE_WITH_TEXT_BEFORE_DEF = 'דפים עם טקסט לפני ההערה הראשונה'
-WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM = 'דפים עם גרשיים שאינם ראשי תיבות'
-WARNING_PAGE_ACRONYM_NO_GERSHAIM = 'דפים עם ראשי תיבות חסרי גרשיים'
-WARNING_PAGE_WITHOUT_GREMMER_BOX = 'דפים חסרי ניתוח דקדוקי'
-WARNING_PAGE_WITH_FIRST_LEVEL_TITLE =  'דפים עם כותרת מדרגה ראשונה'
-WARNINGS_PAGE_WITHOUT_TITLE = 'דפים ללא כותרת'
-WARNING_2nd_LEVEL_TITLE_FROM_LIST = 'דפים עם כותרת סעיף מסדר 2'
-WARNING_TITLE_WITH_HTML_TAGS = 'דפים עם תגיות היפר-טקסט בכותרת'
-WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE = 'דפים בהם כותרת מסדר 2 ללא ניקוד שונה משם הדף'
-WARNING_NO_NIKUD_IN_SEC_TITLE  = 'דפים עם כותרת משנה לא מנוקדת'
-WARNING_GERSHAIM_IN_MARE_MAKOM = 'דפים עם ציטוט מהתנך עם גרשיים במראי מקום'
-WARNING_ERECH_BET_WRONG = 'ערך משני לא תיקני'
-WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE = 'קצרמר בלי תבנית קצרמר'
-WARNING_SEPARATED_HOMONIMIM = 'הומונימים מופרדים'
-WARNING_ = 'בעלי חיים וצמחים ללא תמונות'
+    WARNING_PAGE_WITH_INVALID_FIELD = 1
+    WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER = 2
+    WARNING_PAGE_WITH_COMMENT = 3
+    WARNING_PAGE_WITH_TEXT_BEFORE_DEF = 4
+    WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM = 5
+    WARNING_PAGE_ACRONYM_NO_GERSHAIM = 6
+    WARNING_PAGE_WITHOUT_GREMMER_BOX = 7
+    WARNING_PAGE_WITH_FIRST_LEVEL_TITLE = 8
+    WARNINGS_PAGE_WITHOUT_TITLE = 9
+    WARNING_2nd_LEVEL_TITLE_FROM_LIST  = 10
+    WARNING_TITLE_WITH_HTML_TAGS  = 11
+    WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE = 12
+    WARNING_NO_NIKUD_IN_SEC_TITLE = 13
+    WARNING_GERSHAIM_IN_MARE_MAKOM  = 14
+    WARNING_ERECH_BET_WRONG  = 15
+    WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE = 16
+    WARNING_SEPARATED_HOMONIMIM  = 17
 
-warning_to_code = {
-
-    WARNING_PAGE_WITH_INVALID_FIELD : "if",
-    WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER : "fwo",
-    WARNING_PAGE_WITH_COMMENT : "c",
-    WARNING_PAGE_WITH_TEXT_BEFORE_DEF : "tbd", 
-    WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM : "g",
-    WARNING_PAGE_ACRONYM_NO_GERSHAIM : "ang",
-    WARNING_PAGE_WITHOUT_GREMMER_BOX : "wgb",
-    WARNING_PAGE_WITH_FIRST_LEVEL_TITLE : "flt",
-    WARNINGS_PAGE_WITHOUT_TITLE  : "wt",
-    WARNING_2nd_LEVEL_TITLE_FROM_LIST  : "2ltfl",
-    WARNING_TITLE_WITH_HTML_TAGS  : "ht",
-    WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE  : "stdpt",
-    WARNING_NO_NIKUD_IN_SEC_TITLE  : "nnst",
-    WARNING_GERSHAIM_IN_MARE_MAKOM : "gmm",
-    WARNING_ERECH_BET_WRONG : "ebw",
-    WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE : "kwkt",
-    WARNING_SEPARATED_HOMONIMIM : "sh"
+warning_to_str = {
+    HeWikiWarning.WARNING_PAGE_WITH_INVALID_FIELD : 'דפים עם סעיפים שאינם מהרשימה הסגורה',
+    HeWikiWarning.WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER : 'דפים עם סעיפים שאינם בסדר הנכון',
+    HeWikiWarning.WARNING_PAGE_WITH_COMMENT : 'דפים בהם לא נמחקה ההערה הדיפולטיבית',
+    HeWikiWarning.WARNING_PAGE_WITH_TEXT_BEFORE_DEF : 'דפים עם טקסט לפני ההערה הראשונה',
+    HeWikiWarning.WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM : 'דפים עם גרשיים שאינם ראשי תיבות',
+    HeWikiWarning.WARNING_PAGE_ACRONYM_NO_GERSHAIM : 'דפים עם ראשי תיבות חסרי גרשיים',
+    HeWikiWarning.WARNING_PAGE_WITHOUT_GREMMER_BOX : 'דפים חסרי ניתוח דקדוקי',
+    HeWikiWarning.WARNING_PAGE_WITH_FIRST_LEVEL_TITLE :  'דפים עם כותרת מדרגה ראשונה',
+    HeWikiWarning.WARNINGS_PAGE_WITHOUT_TITLE : 'דפים ללא כותרת',
+    HeWikiWarning.WARNING_2nd_LEVEL_TITLE_FROM_LIST : 'דפים עם כותרת סעיף מסדר 2',
+    HeWikiWarning.WARNING_TITLE_WITH_HTML_TAGS : 'דפים עם תגיות היפר-טקסט בכותרת',
+    HeWikiWarning.WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE : 'דפים בהם כותרת מסדר 2 ללא ניקוד שונה משם הדף',
+    HeWikiWarning.WARNING_NO_NIKUD_IN_SEC_TITLE  : 'דפים עם כותרת משנה לא מנוקדת',
+    HeWikiWarning.WARNING_GERSHAIM_IN_MARE_MAKOM : 'דפים עם ציטוט מהתנך עם גרשיים במראי מקום',
+    HeWikiWarning.WARNING_ERECH_BET_WRONG : 'ערך משני לא תיקני',
+    HeWikiWarning.WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE : 'קצרמר בלי תבנית קצרמר',
+    HeWikiWarning.WARNING_SEPARATED_HOMONIMIM : 'הומונימים מופרדים',
 }
 
-warnings_to_checker2 = {
 
-    WARNING_PAGE_WITH_INVALID_FIELD : checker.InvalidFieldItemChecker(),
-    WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER : checker.InvalidFieldOrderItemChecker(),
-    WARNING_PAGE_WITH_TEXT_BEFORE_DEF : checker.TextBeforeDefChecker(),
-    WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM : checker.NonAcronymWithGereshChecker(),
-    WARNING_PAGE_ACRONYM_NO_GERSHAIM : checker.AcronymWithoutGereshChecker(),
-    WARNING_PAGE_WITHOUT_GREMMER_BOX : checker.NoGremmerBoxChecker(),
-    WARNING_PAGE_WITH_FIRST_LEVEL_TITLE : checker.FirstLevelTitleChecker(),
-    WARNINGS_PAGE_WITHOUT_TITLE  : checker.NoTitleChecker(),
-    WARNING_2nd_LEVEL_TITLE_FROM_LIST  : checker.SecondLevelTitleField(),
-    WARNING_TITLE_WITH_HTML_TAGS  : checker.HtmlTagsInTitle(),
-    WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE  : checker.ItemTitleDiffPageTitle(),
-    WARNING_NO_NIKUD_IN_SEC_TITLE  : checker.NoNikudInSecTitle(),
-    WARNING_GERSHAIM_IN_MARE_MAKOM : checker.GershaimInMareMakom(),
-    WARNING_ERECH_BET_WRONG : checker.ErechBetWrong(),
-    WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE : checker.KtzarmarWithoutKtzarmarTemplate(),
-    WARNING_SEPARATED_HOMONIMIM : checker.HomonimimSeperated()
+
+warning_to_class = {
+
+    HeWikiWarning.WARNING_PAGE_WITH_INVALID_FIELD : checker.InvalidFieldItemChecker,
+    HeWikiWarning.WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER : checker.InvalidFieldOrderItemChecker,
+    HeWikiWarning.WARNING_PAGE_WITH_TEXT_BEFORE_DEF : checker.TextBeforeDefChecker,
+    HeWikiWarning.WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM : checker.NonAcronymWithGereshChecker,
+    HeWikiWarning.WARNING_PAGE_ACRONYM_NO_GERSHAIM : checker.AcronymWithoutGereshChecker,
+    HeWikiWarning.WARNING_PAGE_WITHOUT_GREMMER_BOX : checker.NoGremmerBoxChecker,
+    HeWikiWarning.WARNING_PAGE_WITH_FIRST_LEVEL_TITLE : checker.FirstLevelTitleChecker,
+    HeWikiWarning.WARNINGS_PAGE_WITHOUT_TITLE  : checker.NoTitleChecker,
+    HeWikiWarning.WARNING_2nd_LEVEL_TITLE_FROM_LIST  : checker.SecondLevelTitleField,
+    HeWikiWarning.WARNING_TITLE_WITH_HTML_TAGS  : checker.HtmlTagsInTitle,
+    HeWikiWarning.WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE  : checker.ItemTitleDiffPageTitle,
+    HeWikiWarning.WARNING_NO_NIKUD_IN_SEC_TITLE  : checker.NoNikudInSecTitle,
+    HeWikiWarning.WARNING_GERSHAIM_IN_MARE_MAKOM : checker.GershaimInMareMakom,
+    HeWikiWarning.WARNING_ERECH_BET_WRONG : checker.ErechBetWrong,
+    HeWikiWarning.WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE : checker.KtzarmarWithoutKtzarmarTemplate,
+    HeWikiWarning.WARNING_SEPARATED_HOMONIMIM : checker.HomonimimSeperated
 }
 
-page_warnings = [ WARNING_PAGE_WITH_TEXT_BEFORE_DEF,
-                  WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM,
-                  WARNING_PAGE_ACRONYM_NO_GERSHAIM,
-                  WARNING_PAGE_WITH_FIRST_LEVEL_TITLE,
-                  WARNINGS_PAGE_WITHOUT_TITLE,
-                  WARNING_GERSHAIM_IN_MARE_MAKOM ]
+page_warnings = [ HeWikiWarning.WARNING_PAGE_WITH_TEXT_BEFORE_DEF,
+                  HeWikiWarning.WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM,
+                  HeWikiWarning.WARNING_PAGE_ACRONYM_NO_GERSHAIM,
+                  HeWikiWarning.WARNING_PAGE_WITH_FIRST_LEVEL_TITLE,
+                  HeWikiWarning.WARNINGS_PAGE_WITHOUT_TITLE,
+                  HeWikiWarning.WARNING_GERSHAIM_IN_MARE_MAKOM ]
 
 
 # In wikimilon we might more than one entry in each dictionary value.
@@ -102,46 +99,42 @@ page_warnings = [ WARNING_PAGE_WITH_TEXT_BEFORE_DEF,
 # the checkers in this list need to get the parsed pages to the word entry , so not the text of the whole page but
 # only on the entry level.
 
-item_warnings = [ WARNING_2nd_LEVEL_TITLE_FROM_LIST,
-                  WARNING_TITLE_WITH_HTML_TAGS,
-                  WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE,
-                  WARNING_NO_NIKUD_IN_SEC_TITLE,
-                  WARNING_PAGE_WITHOUT_GREMMER_BOX,
-                  WARNING_ERECH_BET_WRONG,
-                  WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER,
-                  WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE,
-                  WARNING_SEPARATED_HOMONIMIM]
+item_warnings = [ HeWikiWarning.WARNING_2nd_LEVEL_TITLE_FROM_LIST,
+                  HeWikiWarning.WARNING_TITLE_WITH_HTML_TAGS,
+                  HeWikiWarning.WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE,
+                  HeWikiWarning.WARNING_NO_NIKUD_IN_SEC_TITLE,
+                  HeWikiWarning.WARNING_PAGE_WITHOUT_GREMMER_BOX,
+                  HeWikiWarning.WARNING_ERECH_BET_WRONG,
+                  HeWikiWarning.WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER,
+                  HeWikiWarning.WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE,
+                  HeWikiWarning.WARNING_SEPARATED_HOMONIMIM]
 
-field_warnings = [WARNING_PAGE_WITH_INVALID_FIELD,
-                  WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER]
+field_warnings = [HeWikiWarning.WARNING_PAGE_WITH_INVALID_FIELD,
+                  HeWikiWarning.WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER]
 
-warning_to_page_checker  = {}
-warning_to_item_checker  = {}
-warning_to_field_checker = {}
-
-def check_part(page_title,title,part_text):
+def check_part(page_title,title,part_text, warning_to_item_checker, warning_to_field_checker):
 
     warnings = collections.defaultdict(list)
 
-    for key, value in warning_to_item_checker.items():
-        v = value.rule_break_found(page_title,title,part_text,PAGE_TEXT_PART.WHOLE_ITEM)
+    for warning, clss in warning_to_item_checker.items():
+        v = clss().rule_break_found(page_title,title,part_text,PAGE_TEXT_PART.WHOLE_ITEM)
         if v:
-            warnings[key].extend(v)
+            warnings[warning].extend(v)
 
     fields = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).findall(part_text)
 
     for f in fields:
         field_title =  re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
 
-        for key, value in warning_to_field_checker.items():
-            v = value.rule_break_found(page_title,'',field_title,PAGE_TEXT_PART.SECTION_TITLE)
+        for warning, clss in warning_to_field_checker.items():
+            v = clss().rule_break_found(page_title,'',field_title,PAGE_TEXT_PART.SECTION_TITLE)
             if v:
-                warnings[key].extend(v)
+                warnings[warning].extend(v)
 
     return warnings
 
 
-def check_page(site, page_title, page_text):
+def check_page(site, page_title, page_text, warning_to_page_checker, warning_to_item_checker, warning_to_field_checker):
     """
     This function checks for violations of the common structure in wiktionary.
     It report the found issues as string
@@ -155,20 +148,9 @@ def check_page(site, page_title, page_text):
     # if there is no need for detailed description and it is enough to put link to the page, the list will be empty
     warnings = collections.defaultdict(list)
 
-    for key, value in warning_to_page_checker.items():
-        value.reset_state()
-    for key, value in warning_to_item_checker.items():
-        value.reset_state()
-    for key, value in warning_to_field_checker.items():
-        value.reset_state()
-
-    if page_title.endswith('(שורש)'):
-        print("got SHORESH!! %s" % page_title)
-        return warnings
-
-    for key, value in warning_to_page_checker.items():
-        if value.rule_break_found(page_title,'',page_text,PAGE_TEXT_PART.WHOLE_PAGE):
-            warnings[key] = []
+    for warning, clss in warning_to_page_checker.items():
+        if clss().rule_break_found(page_title,'',page_text,PAGE_TEXT_PART.WHOLE_PAGE):
+            warnings[warning] = []
 
     parts_gen = hewiktionary.split_parts(page_text)
 
@@ -176,7 +158,8 @@ def check_page(site, page_title, page_text):
     parts_gen.__next__()
 
     for part in parts_gen:
-        w = check_part(page_title,hewiktionary.lexeme_title_regex_grouped.search(part[0]).group(1).strip() ,part[1])
+        part_title = hewiktionary.lexeme_title_regex_grouped.search(part[0]).group(1).strip()
+        w = check_part(page_title,part_title ,part[1], warning_to_item_checker, warning_to_field_checker)
         for key in w:
                 warnings[key].extend(w[key])
     return warnings
@@ -190,13 +173,17 @@ def main(args):
     genFactory = pagegenerators.GeneratorFactory()
     options = {}
 
-    warnings = [i for key,val in warning_to_code.items() for i in [val,key[::-1]]]
+    warnings = sorted([(key.value, val[::-1]) for key,val in warning_to_str.items()])
 
-    parser = argparse.ArgumentParser(description=("main checker, add an issue code to check this issue. The list is:\r\n"+"%s (%s)\r\n"*len(warning_to_code) )% tuple(warnings),epilog="Options include also global pywikibot options and all generators options", formatter_class=RawTextHelpFormatter)
+    warning_list_str = "\r\n".join(["%s. %s" % t for t in warnings])
+
+    parser = argparse.ArgumentParser(description="Add an issue number to check this issue. The list is:\r\n" + warning_list_str,
+                                     epilog="Options include also global pywikibot options and all generators options",
+                                     formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument("--article",nargs=1, required=False)
     parser.add_argument("-always",action='store_false', required=False,default=True)
-    parser.add_argument("--issues",nargs='+',required=False,choices=list(warning_to_code.values()),default=list(warning_to_code.values()))
+    parser.add_argument("--issues",nargs='+',required=True,choices=[str(w.value) for w in warning_to_str.keys()])
 
     args, factory_args = parser.parse_known_args(local_args)
 
@@ -208,20 +195,11 @@ def main(args):
     genFactory.handleArg('-intersect')
     genFactory.handleArg('-titleregexnot:\(שורש\)')
 
-    print(args)
-    issues_to_search = [k for k,v in warning_to_code.items() if v in args.issues]
+    issues_to_search = [HeWikiWarning(int(k)) for k in args.issues]
 
-    global warning_to_page_checker
-    global warning_to_item_checker
-    global warning_to_field_checker
-
-    warning_to_page_checker  = {k:warnings_to_checker2[k] for k in issues_to_search if k in page_warnings}
-    warning_to_item_checker  = {k:warnings_to_checker2[k] for k in issues_to_search if k in item_warnings}
-    warning_to_field_checker = {k:warnings_to_checker2[k] for k in issues_to_search if k in field_warnings}
-
-    print(warning_to_page_checker)
-    print(warning_to_item_checker)
-    print(warning_to_field_checker)
+    warning_to_page_checker  = {k: warning_to_class[k] for k in issues_to_search if k in page_warnings}
+    warning_to_item_checker  = {k: warning_to_class[k] for k in issues_to_search if k in item_warnings}
+    warning_to_field_checker = {k: warning_to_class[k] for k in issues_to_search if k in field_warnings}
 
     gen = None
     if args.article:
@@ -234,23 +212,21 @@ def main(args):
 
         # filter only main namespace
         all_wiktionary = filter(lambda page: page.ns == '0' and not page.isredirect and not page.title.endswith('(שורש)'), all_wiktionary)
-        gen = (pywikibot.Page(site, p.title) for p in all_wiktionary if check_page(site, p.title, p.text))
+        gen = (pywikibot.Page(site, p.title) for p in all_wiktionary if check_page(site, p.title, p.text, warning_to_page_checker, warning_to_item_checker, warning_to_field_checker))
         gen = pagegenerators.PreloadingGenerator(gen)
     else:
         gen =  pagegenerators.AllpagesPageGenerator(site = site,includeredirects=False)#this is only namespace 0 by default
 
-    gen = genFactory.getCombinedGenerator(gen)#combine with user args
-    gen =  pagegenerators.RegexFilterPageGenerator(gen,hewiktionary.ALEF_TO_TAF_REGEX) # scan only hebrew words
+    # gen = genFactory.getCombinedGenerator(gen)#combine with user args
+    # gen =  pagegenerators.RegexFilterPageGenerator(gen,hewiktionary.ALEF_TO_TAF_REGEX) # scan only hebrew words
 
     # a dictionary where the key is the issue and the value is list of pages violates it
     pages_by_issues = collections.defaultdict(list)
 
 
-
-
     for page in gen:
         try:
-            issues = check_page(site, page.title(), page.get())
+            issues = check_page(site, page.title(), page.get(), warning_to_page_checker, warning_to_item_checker, warning_to_field_checker)
             for issue in issues:
                 if issues[issue] == []:
                     pages_by_issues[issue].append('* [[%s]]' % page.title())
@@ -268,7 +244,7 @@ def main(args):
     # after going over all pages, report it to a maintenance page so human go over it
     for issue, pages in pages_by_issues.items():
         print ('found issue %s' % issue)
-        report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % issue)
+        report_page = pywikibot.Page(site, 'ויקימילון:תחזוקה/%s' % warning_to_str[issue])
         report_content = 'סך הכל %s ערכים\n' % str(len(pages))
         pages.sort()
         report_content +=  '\n'.join(['%s' % p for p in pages])

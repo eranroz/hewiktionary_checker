@@ -16,6 +16,7 @@ import re
 import os
 from pywikibot.xmlreader import XmlDump
 import sys
+import argparse
 
 class ShinToMakafBot(pywikibot.CurrentPageBot):
 
