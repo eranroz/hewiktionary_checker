@@ -1,40 +1,38 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+import re
+import sys
 import pywikibot
 from pywikibot import pagegenerators
-
-import re
-import os
-import sys
 import hewiktionary
 
+"""
+This bot looks for audio recordings of words in Wikicommon and ads a link
+to them in the corresponding Hebrew Wiktionary page
+"""
 class TEMPLATE_STATE:
     BEFORE_START = 1
     START = 2
     END = 3
     NEXT_PART = 4
 
+
 class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
 
     def treat_page(self):
 
         """Load the given page, do some changes, and save it."""
-        #print(self.current_page.title())
-
-        #\u0590-\u05f4 is the hebrew unicode range
-        #\u200f is RIGHT_TO_LEFT mark
         s = re.compile(u'^File:He-(.+)\.ogg$').match(self.current_page.title())
         if s:
             word = s.group(1) 
             site = pywikibot.Site('he','wiktionary')
             word_without_nikud  = re.sub('[\u0590-\u05c7\u05f0-\u05f4\u200f]','',word)
-            #print("WITHOUT")
 
             wikt_page = pywikibot.Page(site,title = word_without_nikud)
             print(word)
             print(word_without_nikud)
-            #
+
             if wikt_page.exists():
                 parts_gen = hewiktionary.split_parts(wikt_page.text)
 
@@ -97,16 +95,12 @@ def main(args):
     gen = pagegenerators.CategorizedPageGenerator(cat)
     global_args  = []
 
-    limit = 0
     article = None
 
     local_args = pywikibot.handle_args(global_args)
     for arg in args:
-        m = re.compile('^-limit:([0-9]+)$').match(arg)
         a = re.compile('^-article:(.+)$').match(arg)
-        if m:
-            limit = int(m.group(1))
-        elif a:
+        if a:
             article = a.group(1)
         else:
             global_args.append(arg)

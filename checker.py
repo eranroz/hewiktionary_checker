@@ -1,8 +1,8 @@
+import re
+import pywikibot
+import pywikibot.textlib
 import hewiktionary
 from hewiktionary import PAGE_TEXT_PART
-import pywikibot
-import re
-import pywikibot.textlib
 
 
 class Checker:
@@ -14,9 +14,6 @@ class Checker:
         """check given text and return "true" (problem found) or "false" (no problem)"""
         raise NotImplementedError('Method %s.rule_break_found() not implemented.'
                                   % self.__class__.__name__)
-
-    def reset_state(self):
-        return
 
 
 class FirstLevelTitleChecker(Checker):
@@ -36,15 +33,15 @@ class TextBeforeDefChecker(Checker):
         if not before:
             return False
         text_before = before.group(1)
-        if text_before != u'' and not re.compile("^\n*\{?").match(text_before):
+        if text_before and not re.compile("^\n*\{?").match(text_before):
             return True
         return False
 
 
 class NoTitleChecker(Checker):
     def rule_break_found(self, page_title, text_title, text, text_portion):
-        text_before = hewiktionary.lexeme_title_regex.search(text)
-        if not text_before:
+        item_title = hewiktionary.lexeme_title_regex.search(text)
+        if not item_title:
             return True
         return False
 
@@ -53,15 +50,15 @@ class NoGremmerBoxChecker(Checker):
     def rule_break_found(self, page_title, text_title, text, text_portion):
 
         if hewiktionary.KATEGORIA_PITGAMI_REGEX.search(text) or text.endswith("'"):
-            return ''
-        elif re.compile(hewiktionary.template_regex + '\n').match(text):
-            return ''
+            return []
+        elif re.compile(hewiktionary.template_regex + '\n').search(text):
+            return []
         elif re.search(hewiktionary.verb_template_regex, text):
-            return ''
+            return []
         elif re.search(hewiktionary.GERSHAIM_REGEX, text_title):
-            return ''
+            return []
         elif re.search('[a-zA-Z]', text_title):
-            return ''
+            return []
         else:
             return ['אין טבלת ניתוח דקדוקי %s' % text_title]
 
@@ -74,7 +71,7 @@ class AcronymWithoutGereshChecker(Checker):
         except pywikibot.InvalidTitle:
             print("AcronymWithoutGereshChecker: invalid category in page %s" % (page_title))
             return False
-        if not hewiktionary.GERSHAIM_REGEX.findall(page_title) and ('ראשי תיבות' in text_categories):
+        if not hewiktionary.GERSHAIM_REGEX.search(page_title) and ('ראשי תיבות' in text_categories):
             return True
         return False
 
@@ -87,7 +84,7 @@ class NonAcronymWithGereshChecker(Checker):
         except pywikibot.InvalidTitle:
             print("NonAcronymWithGereshChecker: invalid category in page %s" % (page_title))
             return False
-        if hewiktionary.GERSHAIM_REGEX.findall(page_title) and ('ראשי תיבות' not in text_categories):
+        if hewiktionary.GERSHAIM_REGEX.search(page_title) and ('ראשי תיבות' not in text_categories):
             return True
         return False
 
@@ -104,9 +101,8 @@ class GershaimInMareMakom(Checker):
         if tsitutim:
             for tsitut in tsitutim:
                 parts = tsitut.split('|')
-
-                if hewiktionary.GERSHAIM_GERESH_REGEX.findall(parts[-1]) or hewiktionary.GERSHAIM_GERESH_REGEX.findall(
-                        parts[-2]) or hewiktionary.GERSHAIM_GERESH_REGEX.findall(parts[-3]):
+                if hewiktionary.GERSHAIM_GERESH_REGEX.findall(parts[-1]) or hewiktionary.GERSHAIM_GERESH_REGEX.search(
+                        parts[-2]) or hewiktionary.GERSHAIM_GERESH_REGEX.search(parts[-3]):
                     return True
         return False
 
@@ -115,16 +111,16 @@ class GershaimInMareMakom(Checker):
 
 class SecondLevelTitleField(Checker):
     def rule_break_found(self, page_title, text_title, text, text_portion):
-        if text_title in hewiktionary.titles_list:
-            return ['סעיף עם כתורת מסדר 2: %s' % text_title]
-        return ''
+        if text_title in hewiktionary.fields_titles_to_order:
+            return ['סעיף עם כותרת מסדר 2: %s' % text_title]
+        return []
 
 
 class HtmlTagsInTitle(Checker):
     def rule_break_found(self, page_title, text_title, text, text_portion):
         if '<' in text_title:
             return ['%s' % text_title]
-        return False
+        return []
 
 
 class ItemTitleDiffPageTitle(Checker):
@@ -164,23 +160,21 @@ class ErechBetWrong(Checker):
 # classes that check by field:
 
 class InvalidFieldItemChecker(Checker):
+
     def rule_break_found(self, page_title, text_title, text, text_portion):
         warnings = []
         fields = re.compile("(^===[^=]+===\s*\n)", re.MULTILINE).findall(text)
         for f in fields:
             field_title = re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
-            if field_title not in hewiktionary.titles_to_order:
+            if field_title not in hewiktionary.fields_titles_to_order:
                 warnings.append('סעיף שאינו מהרשימה: %s' % field_title)
         return warnings
 
 
 class InvalidFieldOrderItemChecker(Checker):
-    def __init__(self):
-        super(InvalidFieldOrderItemChecker, self).__init__()
-        self._state = -1
-        self._last_match = ''
-
     def rule_break_found(self, page_title, text_title, text, text_portion):
+        state = -1
+        last_match = ''
 
         warnings = []
         fields = re.compile("(^===[^=]+===\s*\n)", re.MULTILINE).findall(text)
@@ -188,48 +182,50 @@ class InvalidFieldOrderItemChecker(Checker):
         for f in fields:
             field_title = re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
 
-            if field_title not in hewiktionary.titles_to_order:
+            if field_title not in hewiktionary.fields_titles_to_order:
                 continue
-            new_state = hewiktionary.titles_to_order[field_title]
-            if new_state < self._state:
-                warnings.append('סעיף %s צריך להיות לפני סעיף %s' % (field_title, self._last_match))
+            new_state = hewiktionary.fields_titles_to_order[field_title]
+            if new_state < state:
+                warnings.append('סעיף %s צריך להיות לפני סעיף %s' % (field_title, last_match))
             else:
-                self._state = new_state
-                self._last_match = field_title
-        return warnings
+                state = new_state
+                last_match = field_title
 
-    # HomoninimSeperated()
+        return warnings
 
 
 class HomonimimSeperated(Checker):
     def __init__(self):
         super(HomonimimSeperated, self).__init__()
+        self._titles = []
 
     def rule_break_found(self, page_title, text_title, text, text_portion):
+        if text_portion == PAGE_TEXT_PART.WHOLE_PAGE:
+            self._titles = []
+            return []
+
         tmp_title = re.sub('{{[^{}]*}}', '', text_title, 2).strip()
         if "<" in tmp_title or ">" in tmp_title:
             return []
         reg = re.compile(u'([^)(]+)\s*\(גם: ([^)(]+)\)\s*').search(tmp_title)
-        trim_title = []
-        if (reg):
-            trim_title = reg.group(1).strip()
+
+        if reg:
+            tmp_title = reg.group(1).strip()
         else:
-            trim_title = tmp_title
+            tmp_title = tmp_title
 
-        if self._titles and trim_title != self._titles[-1]:
+        if self._titles and tmp_title != self._titles[-1]:
             for t in self._titles:
-                if trim_title == t:
-                    self._titles.append(trim_title)
-                    return ["ההומונים %s מופרד" % trim_title]
+                if tmp_title == t:
+                    self._titles.append(tmp_title)
+                    return ["ההומונים %s מופרד" % tmp_title]
 
-        self._titles.append(trim_title)
+        self._titles.append(tmp_title)
         return []
 
 
 # a ktzarmar is an item that either has no definition or has less than two section (not including "reo gam")
 class KtzarmarWithoutKtzarmarTemplate(Checker):
-    def __init__(self):
-        super(KtzarmarWithoutKtzarmarTemplate, self).__init__()
 
     def rule_break_found(self, page_title, text_title, text, text_portion):
 

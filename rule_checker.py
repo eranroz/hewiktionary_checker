@@ -88,7 +88,8 @@ page_warnings = [HeWikiWarning.WARNING_PAGE_WITH_TEXT_BEFORE_DEF,
                  HeWikiWarning.WARNING_PAGE_ACRONYM_NO_GERSHAIM,
                  HeWikiWarning.WARNING_PAGE_WITH_FIRST_LEVEL_TITLE,
                  HeWikiWarning.WARNINGS_PAGE_WITHOUT_TITLE,
-                 HeWikiWarning.WARNING_GERSHAIM_IN_MARE_MAKOM]
+                 HeWikiWarning.WARNING_GERSHAIM_IN_MARE_MAKOM,
+                 HeWikiWarning.WARNING_SEPARATED_HOMONIMIM]
 
 # In wikimilon we might more than one entry in each dictionary value.
 # This is because there might be different words that pronounced differently but are written the same.
@@ -110,7 +111,7 @@ def check_part(page_title, title, part_text, warning_to_item_checker):
     warnings = collections.defaultdict(list)
 
     for warning, clss in warning_to_item_checker.items():
-        v = clss().rule_break_found(page_title, title, part_text, PAGE_TEXT_PART.WHOLE_ITEM)
+        v = clss.rule_break_found(page_title, title, part_text, PAGE_TEXT_PART.WHOLE_ITEM)
         if v:
             warnings[warning].extend(v)
 
@@ -122,8 +123,6 @@ def check_page(page_title, page_text, warning_to_page_checker, warning_to_item_c
     This function checks for violations of the common structure in wiktionary.
     It report the found issues as string
     """
-    # pywikibot.output('Analyzing page %s' % page_title)
-    # print 'Analyzing page '.encode('utf-8') + (page_title[::-1].encode('utf-8'))
 
     # warnings is a  dictionary, each key in the dictionary is a string describing the warning.
     # The list of warnings is in the head of this file , they all start with WARNING_
@@ -132,7 +131,7 @@ def check_page(page_title, page_text, warning_to_page_checker, warning_to_item_c
     warnings = collections.defaultdict(list)
 
     for warning, clss in warning_to_page_checker.items():
-        if clss().rule_break_found(page_title, '', page_text, PAGE_TEXT_PART.WHOLE_PAGE):
+        if clss.rule_break_found(page_title, '', page_text, PAGE_TEXT_PART.WHOLE_PAGE):
             warnings[warning] = []
 
     parts_gen = hewiktionary.split_parts(page_text)
@@ -166,7 +165,7 @@ def main(args):
 
     parser.add_argument("--article", nargs=1, required=False)
     parser.add_argument("-always", action='store_false', required=False, default=True)
-    parser.add_argument("--issues", nargs='+', required=True, choices=[str(w.value) for w in warning_to_str.keys()])
+    parser.add_argument("--issues", nargs='+', required=True, choices=[str(w.value) for w in warning_to_str])
 
     args, factory_args = parser.parse_known_args(local_args)
 
@@ -180,8 +179,9 @@ def main(args):
 
     issues_to_search = [HeWikiWarning(int(k)) for k in args.issues]
 
-    warning_to_page_checker = {k: warning_to_class[k] for k in issues_to_search if k in page_warnings}
-    warning_to_item_checker = {k: warning_to_class[k] for k in issues_to_search if k in item_warnings}
+    # instantiate only the needed Checker classes
+    warning_to_page_checker = {k: warning_to_class[k]() for k in issues_to_search if k in page_warnings}
+    warning_to_item_checker = {k: warning_to_class[k]() for k in issues_to_search if k in item_warnings}
 
     gen = None
     if args.article:
@@ -209,7 +209,6 @@ def main(args):
     # a dictionary where the key is the issue and the value is list of pages violates it
     pages_by_issues = collections.defaultdict(list)
 
-    print(warning_to_item_checker)
     for page in gen:
         try:
             issues = check_page(page.title(), page.get(), warning_to_page_checker, warning_to_item_checker)

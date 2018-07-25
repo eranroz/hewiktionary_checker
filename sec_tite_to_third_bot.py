@@ -19,7 +19,7 @@ class SectionTitleLvl2ndTo3rdBot(pywikibot.CurrentPageBot):
 
         for part_title in part_titles:
             title = hewiktionary.lexeme_title_regex_grouped.search(part_title).group(1).strip()
-            if title in hewiktionary.titles_list:
+            if title in hewiktionary.fields_titles_to_order:
                 new_page_text = re.sub('==\s*'+title+'\s*==','==='+title+'===',new_page_text,re.MULTILINE)
 
         if new_page_text != self.current_page.text:

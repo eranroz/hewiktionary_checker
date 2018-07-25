@@ -34,7 +34,7 @@ KISHURIM = "קישורים חיצוניים"
 SIMUCHIN = "סימוכין"
 SHULAIM = "הערות שוליים"
 
-titles_to_order = {
+fields_titles_to_order = {
 
     GIZRON : 0,
     MAKOR  : 0,
@@ -52,7 +52,7 @@ titles_to_order = {
     SHULAIM : 11,
 }
 
-titles_list  = list(titles_to_order.keys())
+titles_list  = list(fields_titles_to_order.keys())
 
 class PAGE_TEXT_PART:
     WHOLE_PAGE = 1
