@@ -138,57 +138,54 @@ class ErechBetWrong(Checker):
 
         erech_bet = re.compile(u'^([^=]+ [\u05d0-\u05d6][\'`"״\u0027]?\s*)$',re.MULTILINE).search(text_title)
         if erech_bet:
-            print("found erech bet: %s" % text_title)
             return ['ערך נוסף לא תיקני: %s ' % text_title]
             
 
         erech_bet = re.compile("^([^=]+ </?[Ss]>[\u05d0-\u05d4]</?[Ss]>)$",re.MULTILINE).search(text_title)
         if erech_bet:
-            print("2 found erech bet: %s" % text_title)
             return ['ערך נוסף לא תיקני: %s ' % text_title]
            
 #classes that check by field:
 
 class InvalidFieldItemChecker(Checker):
     def rule_break_found(self,page_title,text_title,text,text_portion):
-            if text not in hewiktionary.titles_to_order:
-                return ['סעיף שאינו מהרשימה: %s' % text]
+        warnings = []
+        fields = re.compile("(^===[^=]+===\s*\n)", re.MULTILINE).findall(text)
+        for f in fields:
+            field_title = re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
+            if field_title not in hewiktionary.titles_to_order:
+                warnings.append('סעיף שאינו מהרשימה: %s' % field_title)
+        return warnings
 
 class InvalidFieldOrderItemChecker(Checker):
     def __init__(self):
         super(InvalidFieldOrderItemChecker,self).__init__()
         self._state = -1
         self._last_match = ''
-        
-        
-    def reset_state(self):
-        self._state = -1
-        self._last_match = ''
-        
-    r"text variable is the title of the field without the '=' sign "
+
     def rule_break_found(self,page_title,text_title,text,text_portion):
-        if text_portion == PAGE_TEXT_PART.WHOLE_PAGE or text_portion == PAGE_TEXT_PART.WHOLE_ITEM:
-            self.reset_state()
-            return []
-        if text not in hewiktionary.titles_to_order:
-            return []
-        new_state = hewiktionary.titles_to_order[text]
-        if new_state < self._state:
-            return ['סעיף %s צריך להיות לפני סעיף %s' % (text,self._last_match) ]
-        else:
-            self._state = new_state
-            self._last_match = text
+
+        warnings = []
+        fields = re.compile("(^===[^=]+===\s*\n)", re.MULTILINE).findall(text)
+
+        for f in fields:
+            field_title = re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
+
+            if field_title not in hewiktionary.titles_to_order:
+                continue
+            new_state = hewiktionary.titles_to_order[field_title]
+            if new_state < self._state:
+                warnings.append('סעיף %s צריך להיות לפני סעיף %s' % (field_title,self._last_match))
+            else:
+                self._state = new_state
+                self._last_match = field_title
+        return warnings
 
       #HomoninimSeperated()
 class HomonimimSeperated(Checker):
     def __init__(self):
         super(HomonimimSeperated,self).__init__()
-        self.reset_state()
 
-    def reset_state(self):
-        self._titles = []
-
-    #v = value.rule_break_found(page_title,title,part_text,PAGE_TEXT_PART.WHOLE_ITEM)
     def rule_break_found(self,page_title,text_title,text,text_portion):
         tmp_title = re.sub('{{[^{}]*}}','',text_title,2).strip()
         if "<" in tmp_title or ">" in tmp_title:

@@ -7,16 +7,14 @@ Use get_dump to get the full dump (for developing we are analyzing the full dump
 
 &params;
 
-
 """
 
-import re
 import os
 import sys
 import collections
 import argparse
-import pywikibot
 from enum import Enum
+import pywikibot
 
 from pywikibot import pagegenerators
 from pywikibot.xmlreader import XmlDump
@@ -98,7 +96,6 @@ page_warnings = [ HeWikiWarning.WARNING_PAGE_WITH_TEXT_BEFORE_DEF,
 # This is because there might be different words that pronounced differently but are written the same.
 # the checkers in this list need to get the parsed pages to the word entry , so not the text of the whole page but
 # only on the entry level.
-
 item_warnings = [ HeWikiWarning.WARNING_2nd_LEVEL_TITLE_FROM_LIST,
                   HeWikiWarning.WARNING_TITLE_WITH_HTML_TAGS,
                   HeWikiWarning.WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE,
@@ -107,12 +104,11 @@ item_warnings = [ HeWikiWarning.WARNING_2nd_LEVEL_TITLE_FROM_LIST,
                   HeWikiWarning.WARNING_ERECH_BET_WRONG,
                   HeWikiWarning.WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER,
                   HeWikiWarning.WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE,
-                  HeWikiWarning.WARNING_SEPARATED_HOMONIMIM]
+                  HeWikiWarning.WARNING_SEPARATED_HOMONIMIM,
+                  HeWikiWarning.WARNING_PAGE_WITH_INVALID_FIELD]
 
-field_warnings = [HeWikiWarning.WARNING_PAGE_WITH_INVALID_FIELD,
-                  HeWikiWarning.WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER]
 
-def check_part(page_title,title,part_text, warning_to_item_checker, warning_to_field_checker):
+def check_part(page_title,title,part_text, warning_to_item_checker):
 
     warnings = collections.defaultdict(list)
 
@@ -121,20 +117,10 @@ def check_part(page_title,title,part_text, warning_to_item_checker, warning_to_f
         if v:
             warnings[warning].extend(v)
 
-    fields = re.compile("(^===[^=]+===\s*\n)",re.MULTILINE).findall(part_text)
-
-    for f in fields:
-        field_title =  re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
-
-        for warning, clss in warning_to_field_checker.items():
-            v = clss().rule_break_found(page_title,'',field_title,PAGE_TEXT_PART.SECTION_TITLE)
-            if v:
-                warnings[warning].extend(v)
-
     return warnings
 
 
-def check_page(site, page_title, page_text, warning_to_page_checker, warning_to_item_checker, warning_to_field_checker):
+def check_page(page_title, page_text, warning_to_page_checker, warning_to_item_checker):
     """
     This function checks for violations of the common structure in wiktionary.
     It report the found issues as string
@@ -148,6 +134,7 @@ def check_page(site, page_title, page_text, warning_to_page_checker, warning_to_
     # if there is no need for detailed description and it is enough to put link to the page, the list will be empty
     warnings = collections.defaultdict(list)
 
+
     for warning, clss in warning_to_page_checker.items():
         if clss().rule_break_found(page_title,'',page_text,PAGE_TEXT_PART.WHOLE_PAGE):
             warnings[warning] = []
@@ -159,7 +146,7 @@ def check_page(site, page_title, page_text, warning_to_page_checker, warning_to_
 
     for part in parts_gen:
         part_title = hewiktionary.lexeme_title_regex_grouped.search(part[0]).group(1).strip()
-        w = check_part(page_title,part_title ,part[1], warning_to_item_checker, warning_to_field_checker)
+        w = check_part(page_title,part_title ,part[1], warning_to_item_checker)
         for key in w:
                 warnings[key].extend(w[key])
     return warnings
@@ -199,7 +186,6 @@ def main(args):
 
     warning_to_page_checker  = {k: warning_to_class[k] for k in issues_to_search if k in page_warnings}
     warning_to_item_checker  = {k: warning_to_class[k] for k in issues_to_search if k in item_warnings}
-    warning_to_field_checker = {k: warning_to_class[k] for k in issues_to_search if k in field_warnings}
 
     gen = None
     if args.article:
@@ -212,21 +198,21 @@ def main(args):
 
         # filter only main namespace
         all_wiktionary = filter(lambda page: page.ns == '0' and not page.isredirect and not page.title.endswith('(שורש)'), all_wiktionary)
-        gen = (pywikibot.Page(site, p.title) for p in all_wiktionary if check_page(site, p.title, p.text, warning_to_page_checker, warning_to_item_checker, warning_to_field_checker))
+        gen = (pywikibot.Page(site, p.title) for p in all_wiktionary if check_page(p.title, p.text, warning_to_page_checker, warning_to_item_checker))
         gen = pagegenerators.PreloadingGenerator(gen)
     else:
         gen =  pagegenerators.AllpagesPageGenerator(site = site,includeredirects=False)#this is only namespace 0 by default
 
-    # gen = genFactory.getCombinedGenerator(gen)#combine with user args
-    # gen =  pagegenerators.RegexFilterPageGenerator(gen,hewiktionary.ALEF_TO_TAF_REGEX) # scan only hebrew words
+    gen = genFactory.getCombinedGenerator(gen)#combine with user args
+    gen =  pagegenerators.RegexFilterPageGenerator(gen,hewiktionary.ALEF_TO_TAF_REGEX) # scan only hebrew words
 
     # a dictionary where the key is the issue and the value is list of pages violates it
     pages_by_issues = collections.defaultdict(list)
 
-
+    print(warning_to_item_checker)
     for page in gen:
         try:
-            issues = check_page(site, page.title(), page.get(), warning_to_page_checker, warning_to_item_checker, warning_to_field_checker)
+            issues = check_page(page.title(), page.get(), warning_to_page_checker, warning_to_item_checker)
             for issue in issues:
                 if issues[issue] == []:
                     pages_by_issues[issue].append('* [[%s]]' % page.title())
