@@ -1,12 +1,9 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import pywikibot
-from pywikibot import pagegenerators
-
-import re
-import os
 import sys
+import re
+import pywikibot
 import hewiktionary
 
 class TEMPLATE_STATE:

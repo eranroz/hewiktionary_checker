@@ -1,18 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-r"""
-This bot will validate page against list of rules in he-wiktionary
-
-Use get_dump to get the full dump (for developing we are analyzing the full dump)
-
-&params;
-
-Please type "rule_checker.py -help | more" if you can't read the top of the help.
-
-you  can run with 
-python rule_checker.py -simulate -log:logrule.log -limit:5
-
-"""
 
 from __future__ import unicode_literals
 from __future__ import division

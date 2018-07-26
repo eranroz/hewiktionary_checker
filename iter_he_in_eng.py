@@ -1,37 +1,34 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 
-from __future__ import unicode_literals
-from __future__ import division
+import sys
+import os
+import re
+import requests
+import argparse
 import pywikibot
 from pywikibot import pagegenerators
-import re
-import os
 from pywikibot.xmlreader import XmlDump
-import requests
-import sys
-import checker
-import hewiktionary_constants
-from hewiktionary_constants import PAGE_TEXT_PART
+import hewiktionary
+from hewiktionary import PAGE_TEXT_PART
 
             
 def get_dump():
     """
     This function downloads teh latest wiktionary dump
     """
-    # we already have a dump
-    #if os.path.exists('pages-articles.xml.bz2'):
-    #    return
-    # get a new dump
-    print('Dump doesnt exist locally - downloading...')
+
     r = requests.get('http://dumps.wikimedia.org/hewiktionary/latest/hewiktionary-latest-pages-articles.xml.bz2',
                      stream=True)
+    if r.status_code != 200:
+        print("status code is not 200 but %d" % r.status_code)
+        return False
+
     with open('pages-articles.xml.bz2', 'wb') as dump_fd:
         for chunk in r.iter_content(chunk_size=1024):
             if chunk:
                 dump_fd.write(chunk)
-    print('New dump downloaded successfully')
+    return True
 
 
 
@@ -41,6 +38,15 @@ def main(args):
     
     site = pywikibot.Site('en', 'wiktionary')
     global_args  = []
+
+    parser = argparse.ArgumentParser(description="Iterate the English Wiktionary and search for Hebrew pages there that are not"
+                                                 "in the Hebrew wiktionary",
+                                     epilog="Options include also global pywikibot options and all generators options")
+    parser.add_argument("--article", nargs=1, required=False)
+    parser.add_argument("--limit", nargs=1, required=False, type=int)
+    parser.add_argument("--force_get_dump", required=False, action='store_true')
+    parser.add_argument("-always", action='store_false', required=False)
+    args, factory_args = parser.parse_known_args(local_args)
 
     limit = -1
     article = ''

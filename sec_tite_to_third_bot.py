@@ -35,7 +35,8 @@ def main(args):
     genFactory = pagegenerators.GeneratorFactory()
     options = {}
 
-    parser = argparse.ArgumentParser(description="move subsections titles from headin level 2 to heading level 3",epilog="Options include also global pywikibot options and all generators options")
+    parser = argparse.ArgumentParser(description="move subsections titles from headin level 2 to heading level 3", \
+                                     epilog="Options include also global pywikibot options and all generators options")
     parser.add_argument("--article",nargs=1, required=False)
     parser.add_argument("-always",action='store_false', required=False)
     args, factory_args = parser.parse_known_args(local_args)

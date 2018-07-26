@@ -47,7 +47,7 @@ def cmp_to_key(mycmp):
 
 
 def main(args):
-    local_args = pywikibot.handle_args(args)
+    pywikibot.handle_args(args)
     site = pywikibot.Site('he', 'wiktionary')
     maintain_page = pywikibot.Page(site, "ויקימילון:תחזוקה/דפים_עם_סעיפים_שאינם_מהרשימה_הסגורה")
 

@@ -52,8 +52,6 @@ fields_titles_to_order = {
     SHULAIM : 11,
 }
 
-titles_list  = list(fields_titles_to_order.keys())
-
 class PAGE_TEXT_PART:
     WHOLE_PAGE = 1
     WHOLE_ITEM = 2
