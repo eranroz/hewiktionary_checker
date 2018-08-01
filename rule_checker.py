@@ -31,7 +31,6 @@ import checker
 class HeWikiWarning(enum.Enum):
     WARNING_PAGE_WITH_INVALID_FIELD = enum.auto()
     WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER = enum.auto()
-    #WARNING_PAGE_WITH_COMMENT = enum.auto()
     WARNING_PAGE_WITH_TEXT_BEFORE_DEF = enum.auto()
     WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM = enum.auto()
     WARNING_PAGE_ACRONYM_NO_GERSHAIM = enum.auto()
@@ -51,7 +50,6 @@ class HeWikiWarning(enum.Enum):
 warning_to_str = {
     HeWikiWarning.WARNING_PAGE_WITH_INVALID_FIELD: 'דפים עם סעיפים שאינם מהרשימה הסגורה',
     HeWikiWarning.WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER: 'דפים עם סעיפים שאינם בסדר הנכון',
-    #HeWikiWarning.WARNING_PAGE_WITH_COMMENT: 'דפים בהם לא נמחקה ההערה הדיפולטיבית',
     HeWikiWarning.WARNING_PAGE_WITH_TEXT_BEFORE_DEF: 'דפים עם טקסט לפני ההערה הראשונה',
     HeWikiWarning.WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM: 'דפים עם גרשיים שאינם ראשי תיבות',
     HeWikiWarning.WARNING_PAGE_ACRONYM_NO_GERSHAIM: 'דפים עם ראשי תיבות חסרי גרשיים',
@@ -218,7 +216,8 @@ def main(args):
         all_wiktionary = filter(lambda page: page.ns == '0'
                                              and not page.isredirect
                                              and not page.title.endswith('(שורש)')
-                                             and re.search(hewiktionary.ALEF_TO_TAF_REGEX,page.title), all_wiktionary)
+                                             and re.search(hewiktionary.ALEF_TO_TAF_REGEX,page.title)
+                                             and not re.search(r'[a-zA-Z]',page.title), all_wiktionary)
         gen = (pywikibot.Page(site, p.title) for p in all_wiktionary if
                check_page(p.title, p.text, warning_to_page_checker, warning_to_item_checker))
         gen = pagegenerators.PreloadingGenerator(gen)
@@ -228,6 +227,7 @@ def main(args):
 
     gen = genFactory.getCombinedGenerator(gen)  # combine with user args
     gen = pagegenerators.RegexFilterPageGenerator(gen, hewiktionary.ALEF_TO_TAF_REGEX)  # scan only hebrew words
+    gen = pagegenerators.RegexFilterPageGenerator(gen, re.compile(r'[a-zA-Z]'),quantifier='none')
 
     # a dictionary where the key is the issue and the value is list of pages violates it
     pages_by_issues = collections.defaultdict(list)
@@ -241,7 +241,7 @@ def main(args):
                 else:
                     for detailed_issue in issues[issue]:
                         # print(detailed_issue)
-                        pages_by_issues[issue].append(('* [[%s]] :' % page.title()) + detailed_issue)
+                        pages_by_issues[issue].append('* [[%s]] : %s' % (page.title(), detailed_issue))
 
         except pywikibot.IsRedirectPage:
             print("%s is redirect page" % page.title())

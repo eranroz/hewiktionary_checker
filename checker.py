@@ -22,18 +22,18 @@ class FirstLevelTitleChecker(Checker):
         # starts with '=' but doesn't ends with '='
         # strats with anyhting but '=' and ends with '='
         # has no '=' at all
-        if re.compile('^=([^=]+.*|=[^=]*)=\s*$', re.MULTILINE).match(text):
+        if re.compile(r'^=([^=]+.*|=[^=]*)=\s*$', re.MULTILINE).match(text):
             return True
         return False
 
 
 class TextBeforeDefChecker(Checker):
     def rule_break_found(self, page_title, text_title, text, text_portion):
-        before = re.compile("^([^=]*)==[^=]+==\s*", re.MULTILINE).search(text)
+        before = re.compile(r"^([^=]*)==[^=]+==\s*", re.MULTILINE).search(text)
         if not before:
             return False
         text_before = before.group(1)
-        if text_before and not re.compile("^\n*\{?").match(text_before):
+        if text_before and not re.compile(r"^\n*{?").match(text_before):
             return True
         return False
 
@@ -48,16 +48,13 @@ class NoTitleChecker(Checker):
 
 class NoGremmerBoxChecker(Checker):
     def rule_break_found(self, page_title, text_title, text, text_portion):
-
         if hewiktionary.KATEGORIA_PITGAMI_REGEX.search(text) or text.endswith("'"):
             return []
-        elif re.compile(hewiktionary.template_regex + '\n').search(text):
+        elif re.compile(hewiktionary.template_regex).search(text):
             return []
         elif re.search(hewiktionary.verb_template_regex, text):
             return []
         elif re.search(hewiktionary.GERSHAIM_REGEX, text_title):
-            return []
-        elif re.search('[a-zA-Z]', text_title):
             return []
         else:
             return ['אין טבלת ניתוח דקדוקי %s' % text_title]
@@ -97,7 +94,7 @@ class GershaimInMareMakom(Checker):
         self._tanah = u'תנ"ך'
 
     def rule_break_found(self, page_title, text_title, text, text_portion):
-        tsitutim = re.findall(u'\{\{' + self._tsat + u'/' + self._tanah + u'([^{}]*)\}\}', text, re.MULTILINE)
+        tsitutim = re.findall(r'\{\{' + self._tsat + r'/' + self._tanah + r'([^{}]*)\}\}', text, re.MULTILINE)
         if tsitutim:
             for tsitut in tsitutim:
                 parts = tsitut.split('|')
@@ -125,9 +122,9 @@ class HtmlTagsInTitle(Checker):
 
 class ItemTitleDiffPageTitle(Checker):
     def rule_break_found(self, page_title, text_title, text, text_portion):
-        real_title = re.compile('([^\{\}\)\(]*)(\{\{.*\}\})?(\(.*\))?').search(text_title).group(1).strip()
-        no_nikud_title = re.sub('[\u0591-\u05c7\u200f]', '', real_title)
-        no_nikud_title = re.sub('[״]', '"', no_nikud_title)
+        real_title = re.compile(r'([^\{\}\)\(]*)(\{\{.*\}\})?(\(.*\))?').search(text_title).group(1).strip()
+        no_nikud_title = re.sub(r'[\u0591-\u05c7\u200f]', '', real_title)
+        no_nikud_title = re.sub(r'[״]', '"', no_nikud_title)
         if no_nikud_title != page_title:
             return ['כותרת משנה ללא ניקוד: %s' % no_nikud_title]
         return ''
@@ -135,11 +132,11 @@ class ItemTitleDiffPageTitle(Checker):
 
 class NoNikudInSecTitle(Checker):
     def rule_break_found(self, page_title, text_title, text, text_portion):
-        words_in_title = re.compile('[\s]+').split(text_title)
+        words_in_title = re.compile('\s+').split(text_title)
         for word in words_in_title:
-            nikud_num = len(re.findall(u'[\u05b0-\u05bc]', word))
-            he_num = len(re.findall(u'[\u0591-\u05f4]', word))
-            other_num = len(re.findall(u'[\'|}{)("״]', word))
+            nikud_num = len(re.findall(r'[\u05b0-\u05bc]', word))
+            he_num = len(re.findall(r'[\u0591-\u05f4]', word))
+            other_num = len(re.findall(r'[\'|}{)("״]', word))
             if len(word) > 2 and other_num == 0 and he_num > 0 and nikud_num == 0:
                 return ['כותרת: %s' % text_title]
 
@@ -148,7 +145,7 @@ class ErechBetWrong(Checker):
 
     def rule_break_found(self, page_title, text_title, text, text_portion):
 
-        erech_bet = re.compile(u'^([^=]+ [\u05d0-\u05d6][\'`"״\u0027]?\s*)$', re.MULTILINE).search(text_title)
+        erech_bet = re.compile(r'^([^=]+ [\u05d0-\u05d6][\'`"״]?\s*)$', re.MULTILINE).search(text_title)
         if erech_bet:
             return ['ערך נוסף לא תיקני: %s ' % text_title]
 
@@ -163,9 +160,9 @@ class InvalidFieldItemChecker(Checker):
 
     def rule_break_found(self, page_title, text_title, text, text_portion):
         warnings = []
-        fields = re.compile("(^===[^=]+===\s*\n)", re.MULTILINE).findall(text)
+        fields = re.compile(r"(^===[^=]+===\s*\n)", re.MULTILINE).findall(text)
         for f in fields:
-            field_title = re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
+            field_title = re.compile(r"^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
             if field_title not in hewiktionary.fields_titles_to_order:
                 warnings.append('סעיף שאינו מהרשימה: %s' % field_title)
         return warnings
@@ -177,10 +174,10 @@ class InvalidFieldOrderItemChecker(Checker):
         last_match = ''
 
         warnings = []
-        fields = re.compile("(^===[^=]+===\s*\n)", re.MULTILINE).findall(text)
+        fields = re.compile(r"(^===[^=]+===\s*\n)", re.MULTILINE).findall(text)
 
         for f in fields:
-            field_title = re.compile("^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
+            field_title = re.compile(r"^===\s*([^=]+)\s*===\s*\n").search(f).group(1).strip()
 
             if field_title not in hewiktionary.fields_titles_to_order:
                 continue
@@ -204,10 +201,10 @@ class HomonimimSeperated(Checker):
             self._titles = []
             return []
 
-        tmp_title = re.sub('{{[^{}]*}}', '', text_title, 2).strip()
+        tmp_title = re.sub(r'{{[^{}]*}}', '', text_title, 2).strip()
         if "<" in tmp_title or ">" in tmp_title:
             return []
-        reg = re.compile(u'([^)(]+)\s*\(גם: ([^)(]+)\)\s*').search(tmp_title)
+        reg = re.compile(r'([^)(]+)\s*\(גם: ([^)(]+)\)\s*').search(tmp_title)
 
         if reg:
             tmp_title = reg.group(1).strip()
@@ -229,20 +226,17 @@ class KtzarmarWithoutKtzarmarTemplate(Checker):
 
     def rule_break_found(self, page_title, text_title, text, text_portion):
 
-        if re.compile(u'.*{{קצרמר}}.*', re.MULTILINE).search(text) is not None:
-            return []
-
-        if re.compile(u'[a-zA-Z"]').search(page_title):
+        if re.compile(r'.*{{קצרמר}}.*', re.MULTILINE).search(text) is not None:
             return []
 
         # see http://stackoverflow.com/questions/19142042/python-regex-to-get-everything-until-the-first-dot-in-a-string
         # need the "?" so the regex won't be greedy
         # hagdarot = re.compile(u"^(.*?)===[^=]+===\s*\n",re.MULTILINE).search(text)
 
-        sections = re.compile("(^===[^=]+===\s*\n)", re.MULTILINE).split(text)
+        sections = re.compile(r"(^===[^=]+===\s*\n)", re.MULTILINE).split(text)
 
         hagdarot = sections.pop(0)
-        hagdara = re.compile("^#[^:]", re.MULTILINE).search(hagdarot)
+        hagdara = re.compile(r"^#[^:]", re.MULTILINE).search(hagdarot)
 
         if not hagdara:
             # print("found no hagdara %s" % text_title)
