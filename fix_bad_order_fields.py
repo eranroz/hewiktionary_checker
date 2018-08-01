@@ -28,7 +28,7 @@ def split_parts(page_text):
 
 
 def cmp(m1, m2):
-    return hewiktionary.titles_to_order[m1[2]] - hewiktionary.titles_to_order[m2[2]]
+    return hewiktionary.fields_titles_to_order[m1[2]] - hewiktionary.fields_titles_to_order[m2[2]]
 
 
 def cmp_to_key(mycmp):
@@ -83,7 +83,7 @@ def fix_part2(part_text):
         if section_title:
             section_title = section_title.group(1).strip()
 
-            if section_title in hewiktionary.titles_to_order:
+            if section_title in hewiktionary.fields_titles_to_order:
                 fields_from_known_list_to_sort += [[fields[idx], fields[idx + 1],
                                                     section_title]]  # add the section title, the section text and the the title itsel (for sorting)
             else:
@@ -146,7 +146,7 @@ def main(args):
     if args.article:
         article = args.article[0]
         page = pywikibot.Page(site, article)
-        page.text = fix_page(page.title(), page.text)
+        page.text = fix_page(page.text)
 
         if page.text:
             page.save("בוט שמסדר סעיפים מדרגה 3 בסדר הנכון")

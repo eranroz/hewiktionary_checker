@@ -9,11 +9,16 @@ Use get_dump to get the full dump (for developing we are analyzing the full dump
 
 """
 
-import os
 import sys
+
+if sys.version_info[0] < 3 or sys.version_info[1] < 6:
+    raise Exception("Must be using >= Python 3.6, current %d.%d" %(sys.version_info[0], sys.version_info[1]))
+
+import os
+import re
 import collections
 import argparse
-from enum import Enum
+import enum
 import pywikibot
 
 from pywikibot import pagegenerators
@@ -23,30 +28,30 @@ from hewiktionary import PAGE_TEXT_PART
 import checker
 
 
-class HeWikiWarning(Enum):
-    WARNING_PAGE_WITH_INVALID_FIELD = 1
-    WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER = 2
-    WARNING_PAGE_WITH_COMMENT = 3
-    WARNING_PAGE_WITH_TEXT_BEFORE_DEF = 4
-    WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM = 5
-    WARNING_PAGE_ACRONYM_NO_GERSHAIM = 6
-    WARNING_PAGE_WITHOUT_GREMMER_BOX = 7
-    WARNING_PAGE_WITH_FIRST_LEVEL_TITLE = 8
-    WARNINGS_PAGE_WITHOUT_TITLE = 9
-    WARNING_2nd_LEVEL_TITLE_FROM_LIST = 10
-    WARNING_TITLE_WITH_HTML_TAGS = 11
-    WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE = 12
-    WARNING_NO_NIKUD_IN_SEC_TITLE = 13
-    WARNING_GERSHAIM_IN_MARE_MAKOM = 14
-    WARNING_ERECH_BET_WRONG = 15
-    WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE = 16
-    WARNING_SEPARATED_HOMONIMIM = 17
+class HeWikiWarning(enum.Enum):
+    WARNING_PAGE_WITH_INVALID_FIELD = enum.auto()
+    WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER = enum.auto()
+    #WARNING_PAGE_WITH_COMMENT = enum.auto()
+    WARNING_PAGE_WITH_TEXT_BEFORE_DEF = enum.auto()
+    WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM = enum.auto()
+    WARNING_PAGE_ACRONYM_NO_GERSHAIM = enum.auto()
+    WARNING_PAGE_WITHOUT_GREMMER_BOX = enum.auto()
+    WARNING_PAGE_WITH_FIRST_LEVEL_TITLE = enum.auto()
+    WARNINGS_PAGE_WITHOUT_TITLE = enum.auto()
+    WARNING_2nd_LEVEL_TITLE_FROM_LIST = enum.auto()
+    WARNING_TITLE_WITH_HTML_TAGS = enum.auto()
+    WARNING_SEC_TITLE_DIFFERENT_THAN_PAGE_TITLE = enum.auto()
+    WARNING_NO_NIKUD_IN_SEC_TITLE = enum.auto()
+    WARNING_GERSHAIM_IN_MARE_MAKOM = enum.auto()
+    WARNING_ERECH_BET_WRONG = enum.auto()
+    WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE = enum.auto()
+    WARNING_SEPARATED_HOMONIMIM = enum.auto()
 
 
 warning_to_str = {
     HeWikiWarning.WARNING_PAGE_WITH_INVALID_FIELD: 'דפים עם סעיפים שאינם מהרשימה הסגורה',
     HeWikiWarning.WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER: 'דפים עם סעיפים שאינם בסדר הנכון',
-    HeWikiWarning.WARNING_PAGE_WITH_COMMENT: 'דפים בהם לא נמחקה ההערה הדיפולטיבית',
+    #HeWikiWarning.WARNING_PAGE_WITH_COMMENT: 'דפים בהם לא נמחקה ההערה הדיפולטיבית',
     HeWikiWarning.WARNING_PAGE_WITH_TEXT_BEFORE_DEF: 'דפים עם טקסט לפני ההערה הראשונה',
     HeWikiWarning.WARNING_NON_ACRONYM_PAGE_WITH_GERSHAIM: 'דפים עם גרשיים שאינם ראשי תיבות',
     HeWikiWarning.WARNING_PAGE_ACRONYM_NO_GERSHAIM: 'דפים עם ראשי תיבות חסרי גרשיים',
@@ -140,10 +145,10 @@ def check_page(page_title, page_text, warning_to_page_checker, warning_to_item_c
     parts_gen.__next__()
 
     for part in parts_gen:
-        part_title = hewiktionary.lexeme_title_regex_grouped.search(part[0]).group(1).strip()
-        w = check_part(page_title, part_title, part[1], warning_to_item_checker)
-        for key in w:
-            warnings[key].extend(w[key])
+        part_title = hewiktionary.lexeme_title_regex_grouped.search(part.title).group(1).strip()
+        part_warnings = check_part(page_title, part_title, part.content, warning_to_item_checker)
+        for w in part_warnings:
+            warnings[w].extend(part_warnings[w])
     return warnings
 
 
@@ -152,24 +157,31 @@ def main(args):
 
     site = pywikibot.Site('he', 'wiktionary')
     genFactory = pagegenerators.GeneratorFactory()
-    options = {}
+
 
     warnings = sorted([(key.value, val[::-1]) for key, val in warning_to_str.items()])
 
     warning_list_str = "\r\n".join(["%s. %s" % t for t in warnings])
 
     parser = argparse.ArgumentParser(
-        description="Add an issue number to check this issue. The list is:\r\n" + warning_list_str,
+        description="Add an issue number to check this issue. The list is:\r\n" + warning_list_str +"\r\n"
+        "if no issue is chosen then all issues are assumed and checked",
         epilog="Options include also global pywikibot options and all generators options",
         formatter_class=argparse.RawTextHelpFormatter)
 
-    parser.add_argument("--article", nargs=1, required=False)
-    parser.add_argument("-always", action='store_false', required=False, default=True)
-    parser.add_argument("--issues", nargs='+', required=True, choices=[str(w.value) for w in warning_to_str])
+    parser.add_argument("--force-get-dump", required=False, default=False,action="store_true")
+    parser.add_argument("--article", required=False)
+    parser.add_argument("--issues", nargs='+', required=False, type=int, choices=[w.value for w in warning_to_str])
 
     args, factory_args = parser.parse_known_args(local_args)
+    print(args)
 
-    options['always'] = args.always
+    if args.force_get_dump or not os.path.exists(hewiktionary.LATEST_DUMP):
+        res = hewiktionary.download_dump()
+        if not res:
+            print("could not download dump")
+            if args.force_get_dump:
+                exit(-1)
 
     for arg in factory_args:
         genFactory.handleArg(arg)
@@ -177,25 +189,36 @@ def main(args):
     genFactory.handleArg('-intersect')
     genFactory.handleArg('-titleregexnot:\(שורש\)')
 
-    issues_to_search = [HeWikiWarning(int(k)) for k in args.issues]
+    #the list of checks that the user wanted
+    if not args.issues:
+        issues_to_search = warning_to_str.keys()
+    else:
+        issues_to_search = [HeWikiWarning(int(k)) for k in args.issues]
 
-    # instantiate only the needed Checker classes
-    warning_to_page_checker = {k: warning_to_class[k]() for k in issues_to_search if k in page_warnings}
-    warning_to_item_checker = {k: warning_to_class[k]() for k in issues_to_search if k in item_warnings}
+    # each check (issue) is either a page issue or an item issue (or both)
+    # so we have to dict that maps and issue enum to a checker instant
+    warning_to_page_checker = {}
+    warning_to_item_checker = {}
+    for issue in issues_to_search:
+        checker_instans = warning_to_class[issue]()
+        if issue in page_warnings:
+            warning_to_page_checker[issue] = checker_instans
+        if issue in item_warnings:
+            warning_to_item_checker[issue] = checker_instans
 
-    gen = None
     if args.article:
-        article = args.article[0]
-        gen = pagegenerators.PreloadingGenerator([pywikibot.Page(site, article)])
-    elif os.path.exists('hewiktionary-20180320-pages-meta-current.xml.bz2'):
+        gen = pagegenerators.PreloadingGenerator([pywikibot.Page(site, args.article)])
+    # running initial check from local dump improves runtime dramatically
+    elif os.path.exists(hewiktionary.LATEST_DUMP):
         print('parsing dump')
-        all_wiktionary = XmlDump(
-            'hewiktionary-20180320-pages-meta-current.xml.bz2').parse()  # open the dump and parse it.
+        all_wiktionary = XmlDump(hewiktionary.LATEST_DUMP).parse()  # open the dump and parse it.
         print('end parsing dump')
 
         # filter only main namespace
-        all_wiktionary = filter(
-            lambda page: page.ns == '0' and not page.isredirect and not page.title.endswith('(שורש)'), all_wiktionary)
+        all_wiktionary = filter(lambda page: page.ns == '0'
+                                             and not page.isredirect
+                                             and not page.title.endswith('(שורש)')
+                                             and re.search(hewiktionary.ALEF_TO_TAF_REGEX,page.title), all_wiktionary)
         gen = (pywikibot.Page(site, p.title) for p in all_wiktionary if
                check_page(p.title, p.text, warning_to_page_checker, warning_to_item_checker))
         gen = pagegenerators.PreloadingGenerator(gen)

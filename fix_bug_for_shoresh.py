@@ -38,10 +38,11 @@ class LinkShoreshToTemplateShoresh(pywikibot.CurrentPageBot):
 
 def main(args):
 
+    pywikibot.handle_args(args)
     site = pywikibot.Site('he', 'wiktionary')
 
     print(__file__+" סריקה עם בוט")
-    pywikibot.handle_args(args)
+
 
     if os.path.exists('pages-articles.xml.bz2'):
         print('parsing dump')
@@ -55,7 +56,7 @@ def main(args):
     else:
         #TODO - make sure this case works
         print('Not using dump - use get_dump to download dump file or run with comment lise arguments')
-        gen =  pagegenerators.AllpagesPageGenerator(site = site,total = limit)
+        gen =  pagegenerators.AllpagesPageGenerator(site = site)
 
     bot = LinkShoreshToTemplateShoresh(generator = gen,site = site)
     bot.run()

@@ -47,7 +47,7 @@ class HebrewWordsRecordsLinkerBot(pywikibot.CurrentPageBot):
                     sec_word = hewiktionary.lexeme_title_regex_grouped.search(part[0]).group(1).strip()
                     sec_word = re.sub('\u200f','',sec_word)
 
-                    if(sec_word == word):
+                    if sec_word == word:
                         final += [part[0]]
                         print("   FOUND MATCH: "+word)
                         if re.compile("{{נגן").search(part[1]):

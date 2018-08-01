@@ -12,52 +12,6 @@ import pywikibot
 from pywikibot import pagegenerators
 from pywikibot.xmlreader import XmlDump
 import hewiktionary
-import requests
-
-def get_some_wiki_dump(lang_code):
-    """
-    This function downloads teh latest wiktionary dump
-    """
-    url = 'http://dumps.wikimedia.org/%swiktionary/latest/%swiktionary-latest-pages-articles.xml.bz2' % (
-        lang_code, lang_code)
-    file = '%swiktionary-latest-pages-articles.xml.bz2' % (lang_code)
-    try:
-        req = requests.get(url, stream=True)
-    except requests.exceptions.RequestException as exc:
-        print("exception getting the dump file %s" % file)
-        print(exc)
-        return False
-    if req.status_code != 200:
-        print("status code is not 200 but %d" % req.status_code)
-        return False
-
-    with open(file, 'wb') as dump_fd:
-        for chunk in req.iter_content(chunk_size=1024):
-            if chunk:
-                dump_fd.write(chunk)
-    return True
-
-
-def get_dump():
-    """
-    This function downloads teh latest wiktionary dump
-    """
-    try:
-        req = requests.get('http://dumps.wikimedia.org/hewiktionary/latest/hewiktionary-latest-pages-articles.xml.bz2',
-                           stream=True)
-    except requests.exceptions.RequestException as e:
-        print("exception getting the dump file")
-        print(e)
-        return False
-    if req.status_code != 200:
-        print("status code is not 200 but %d" % req.status_code)
-        return False
-
-    with open('pages-articles.xml.bz2', 'wb') as dump_fd:
-        for chunk in req.iter_content(chunk_size=1024):
-            if chunk:
-                dump_fd.write(chunk)
-    return True
 
 
 def main(args):
@@ -77,10 +31,10 @@ def main(args):
     pywikibot.handle_args(factory_args)
 
     if args.force_get_dump:
-        if not get_dump():
+        if not hewiktionary.download_dump():
             print("could not get dump of hewiktionary")
             sys.exit(-1)
-        if not get_some_wiki_dump("en"):
+        if not hewiktionary.download_lang_dump("en"):
             print("could not get dump of enwiktionary")
             sys.exit(-1)
 
@@ -113,9 +67,6 @@ def main(args):
     for idx, page in enumerate(gen):
         if idx % 100 == 0:
             print(page.title())
-        if page.title() == 'תתרנית':
-            break
-
         if page.isRedirectPage():
             continue
         if not hewiktionary.HEBREW_WORD_REGEX.search(page.title()):

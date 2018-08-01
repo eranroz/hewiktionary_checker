@@ -1,4 +1,6 @@
 import re
+import requests
+import collections
 
 template_regex='\n*{{ניתוח\s+דקדוקי\s*\|?\s*'
 verb_template_regex='\n*{{ניתוח\s+דקדוקי\sלפועל\s*\|?\s*'
@@ -57,6 +59,36 @@ class PAGE_TEXT_PART:
     WHOLE_ITEM = 2
     SECTION_TITLE = 3
 
+LATEST_DUMP = 'hewiktionary-latest-pages-articles.xml.bz2'
+
+def download_lang_dump(lang_code):
+    """
+        This function downloads teh latest wiktionary dump
+        """
+    url = 'http://dumps.wikimedia.org/%swiktionary/latest/%swiktionary-latest-pages-articles.xml.bz2' % (
+        lang_code, lang_code)
+    file = '%swiktionary-latest-pages-articles.xml.bz2' % (lang_code)
+    try:
+        req = requests.get(url, stream=True)
+    except requests.exceptions.RequestException as exc:
+        print("exception getting the dump file %s" % file)
+        print(exc)
+        return False
+
+    if req.status_code != 200:
+        print("status code is not 200 but %d" % req.status_code)
+        return False
+
+    with open(file, 'wb') as dump_fd:
+        for chunk in req.iter_content(chunk_size=1024):
+            if chunk:
+                dump_fd.write(chunk)
+    return True
+
+def download_dump():
+    return download_lang_dump("he")
+
+
 def split_parts(page_text):
 
     '''
@@ -87,7 +119,9 @@ def split_parts(page_text):
 
     yield (parts.pop(0),'')
 
+
     for i in range(0,len(parts),2):
+        PagePart = collections.namedtuple("PagePart", 'title content')
         title = parts[i]
         part = parts[i+1]
-        yield (title,part)
+        yield PagePart(title,part)

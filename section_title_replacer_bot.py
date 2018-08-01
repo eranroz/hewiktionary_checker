@@ -42,7 +42,6 @@ titles_replacer = {
     "נרדפות" : hewiktionary.NIRDAFOT,
     "מילים מנוגדות" : hewiktionary.NIGUDIM,
     "נגודים" : hewiktionary.NIGUDIM,
-    "תרגומים" : hewiktionary.TERGUM,
     "תירגום" : hewiktionary.TERGUM,
     "תירגומים" : hewiktionary.TERGUM,
     "תרגומים" :  hewiktionary.TERGUM,
@@ -83,32 +82,33 @@ def main(args):
     genFactory = pagegenerators.GeneratorFactory()
     options = {}
 
-    parser = argparse.ArgumentParser(description="replace wrong subsection titles in the Hebrew Wiktionary",epilog="Options include also global pywikibot options and all generators options")
-    parser.add_argument("--article",nargs=1, required=False)
+    parser = argparse.ArgumentParser(description="replace wrong subsection titles in the Hebrew Wiktionary",
+                                     epilog="Options include also global pywikibot options and all generators options")
+    parser.add_argument("--article",type=str, required=False)
     parser.add_argument("-always",action='store_false', required=False)
     args, factory_args = parser.parse_known_args(local_args)
 
     options['always'] = args.always
-
+    options['site'] = site
     for arg in factory_args:
         genFactory.handleArg(arg)
 
     genFactory.handleArg('-intersect')
 
     if args.article:
-        article = args.article[0]
-        print(article[::-1])#the terminal shows hebrew left to write :(
-        gen = [pywikibot.Page(site, article)]
+        print(args.article[::-1])#the terminal shows hebrew left to write :(
+        gen = [pywikibot.Page(site, args.article)]
         gen = pagegenerators.PreloadingGenerator(gen)
     else:
         gen = pagegenerators.LinkedPageGenerator(maintain_page, content = True)
 
     gen = genFactory.getCombinedGenerator(gen)
 
-    bot = SectionTitleReplacerBot(generator = gen,site = site, **options)
+    bot = SectionTitleReplacerBot(generator = gen, **options)
     bot.run()
 
     print('_____________________DONE____________________')
+
 
 if __name__ == "__main__":
     main(sys.argv)

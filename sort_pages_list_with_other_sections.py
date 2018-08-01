@@ -17,6 +17,7 @@ def cmp(m1,m2):
         print("PROBLEM")
         print(m1)
         print(m2)
+        return 0
     if s1 < s2:
         return -1
     if s1 > s2:
