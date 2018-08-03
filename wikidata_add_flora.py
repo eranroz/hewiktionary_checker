@@ -1,4 +1,4 @@
-import os
+import re
 import pywikibot
 import json
 import pickle
@@ -12,7 +12,7 @@ WHERE
 {
   ?item wdt:P105 wd:Q35409 .
   ?item schema:description ?desc .
-  FILTER (CONTAINS(?desc, 'plants'))
+  FILTER regex(?desc, "(plants|conifers)", "i")
   filter (lang(?desc) = "en") .
   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
 }
@@ -22,7 +22,7 @@ wikidata_site = pywikibot.Site("wikidata", "wikidata")
 
 
 try:
-    plants = pickle.load(open('plants2.pkl','rb'))
+    plants = pickle.load(open('plants.pkl','rb'))
 
 except Exception:
     plants = set()
@@ -32,7 +32,7 @@ except Exception:
         p.get()
         plants.add(p)
         print(p.aliases)
-    pickle.dump(plants, open("plants2.pkl", "wb"))
+    pickle.dump(plants, open("plants.pkl", "wb"))
 
 # Q2 = """
 # SELECT ?item ?desc
@@ -40,7 +40,7 @@ except Exception:
 # {
 #   ?item wdt:P105 wd:Q35409 .
 #   ?item schema:description ?desc .
-#   FILTER (CONTAINS(?desc, 'plants'))
+#   FILTER regex(?desc, "(plants|conifers)", "i")
 #   filter (lang(?desc) = "en") .
 #   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
 # }
@@ -48,14 +48,14 @@ except Exception:
 #
 #
 # generator2 = pg.WikidataSPARQLPageGenerator(Q2, site=wikidata_site)
-# for p in generator:
+# for p in generator2:
 #     if p not in plants:
 #         p.get()
 #         plants.add(p)
 #         print("added")
 #     else:
 #         print('already')
-# pickle.dump(plants, open("plants2.pkl", "wb"))
+# pickle.dump(plants, open("plants.pkl", "wb"))
 # os.exist(1)
 
 """
@@ -80,15 +80,28 @@ for p in plants:
     #print(p.aliases)
     print(p.labels)
 
+spelling = {'Lytheraceae' : 'Lythraceae',
+            'Ophioglosaceae' : 'Ophioglossaceae',
+            'Simarubiaceae':'Simaroubaceae',
+            'Gymnogrammaceae': 'Pteridaceae'}
 with open('all.json') as f:
     data = json.load(f)
     for family in data:
         found  = False
         lat = family['lat_name']
+        if lat in spelling:
+            lat = spelling[lat]
+        if '(' in lat:
+            m = re.match(r"(.*)\s+\((.*)\)",lat)
+            lat1 = m.group(1)
+            lat2 = m.group(2)
+        else:
+            lat1 = lat2 = lat
         for plant in plants:
             alias_vals = plant.aliases.values()
-            alias_list = list(set(chain.from_iterable(alias_vals)))
-            if lat in alias_list or lat in plant.labels.values():
+            alias_list = set(chain.from_iterable(alias_vals))
+            if lat1 in alias_list or lat1 in plant.labels.values() \
+               or lat2 in alias_list or lat2 in plant.labels.values():
                 print("FOUND")
                 found = True
                 break
