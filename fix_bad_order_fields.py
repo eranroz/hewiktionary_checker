@@ -60,14 +60,6 @@ def cmp_to_key(mycmp):
 
 
 def fix_part2(part_text):
-    original = part_text
-    if re.compile('[^\n]===[^=\n\r\v\f]+===', re.MULTILINE).search(part_text):
-        print('ERROR: a 3rd level title that do not start with new line')
-        return original
-
-    if re.compile('\n===[^=\n\r\v\f]+===[ \t]*[^\n]', re.MULTILINE).search(part_text):
-        print('ERROR: a 3rd level title that do not end')
-        return original
 
     categories = re.findall("\[\[קטגוריה:[^\]]+\]\]", part_text, re.MULTILINE)
 
@@ -76,10 +68,11 @@ def fix_part2(part_text):
 
     fields_from_known_list_to_sort = []
     fields_not_from_known_list = {}
-    fields = re.compile("(===[^=\n\r\v\f]+===\s*\n)", re.MULTILINE).split(part_text)
+    fields = re.compile("(?<=\n)(===[^=\n\r\v\f]+===\s*\n)", re.MULTILINE).split(part_text)
+
 
     for idx, field in enumerate(fields):
-        section_title = re.compile("===\s*([^=]+)\s*===\s*\n").search(field)
+        section_title = re.compile("(?<=^)===\s*([^=]+)\s*===\s*\n").search(field)
         if section_title:
             section_title = section_title.group(1).strip()
 
@@ -151,6 +144,10 @@ def main(args):
         if page.text:
             page.save("בוט שמסדר סעיפים מדרגה 3 בסדר הנכון")
 
+    #elif True:
+    #    c = open('wikitext.txt', 'r')
+    #    text = c.read()
+    #    x = fix_page(text)
     else:
         maintain_page = pywikibot.Page(site, "ויקימילון:תחזוקה/דפים_עם_סעיפים_שאינם_בסדר_הנכון")
 
