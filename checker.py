@@ -155,9 +155,20 @@ class ErechBetWrong(Checker):
 
 
 # classes that check by field:
+class TergumWithReference(Checker):
+    def rule_break_found(self, page_title, text_title, text, text_portion):
+        tergum = re.compile(r"^===[ \t]*תרגום[ \t]*===\s*\n([^=]*)", re.MULTILINE).search(text)
+        warnings = []
+        if tergum:
+            tergumim = tergum.group(1).strip()
+            ref = re.compile("^.*[0-9].*$", re.MULTILINE).search(tergumim)
+            if ref:
+                ref = ref.group().strip()
+            if ref and "{{ע" not in ref and "{{תר" not in ref:
+                warnings.append(ref)
+        return warnings
 
 class InvalidFieldItemChecker(Checker):
-
     def rule_break_found(self, page_title, text_title, text, text_portion):
         warnings = []
         fields = re.compile(r"(^===[^=]+===\s*\n)", re.MULTILINE).findall(text)

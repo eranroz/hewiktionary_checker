@@ -29,6 +29,7 @@ import checker
 
 
 class HeWikiWarning(enum.Enum):
+    WARNING_TERGUM_WITH_REF = enum.auto()
     WARNING_PAGE_WITH_INVALID_FIELD = enum.auto()
     WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER = enum.auto()
     WARNING_PAGE_WITH_TEXT_BEFORE_DEF = enum.auto()
@@ -48,6 +49,7 @@ class HeWikiWarning(enum.Enum):
 
 
 warning_to_str = {
+    HeWikiWarning.WARNING_TERGUM_WITH_REF: 'דפים עם תרגום עם רפרפנס לפירושים',
     HeWikiWarning.WARNING_PAGE_WITH_INVALID_FIELD: 'דפים עם סעיפים שאינם מהרשימה הסגורה',
     HeWikiWarning.WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER: 'דפים עם סעיפים שאינם בסדר הנכון',
     HeWikiWarning.WARNING_PAGE_WITH_TEXT_BEFORE_DEF: 'דפים עם טקסט לפני ההערה הראשונה',
@@ -67,7 +69,7 @@ warning_to_str = {
 }
 
 warning_to_class = {
-
+    HeWikiWarning.WARNING_TERGUM_WITH_REF: checker.TergumWithReference,
     HeWikiWarning.WARNING_PAGE_WITH_INVALID_FIELD: checker.InvalidFieldItemChecker,
     HeWikiWarning.WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER: checker.InvalidFieldOrderItemChecker,
     HeWikiWarning.WARNING_PAGE_WITH_TEXT_BEFORE_DEF: checker.TextBeforeDefChecker,
@@ -107,6 +109,7 @@ item_warnings = [HeWikiWarning.WARNING_2nd_LEVEL_TITLE_FROM_LIST,
                  HeWikiWarning.WARNING_PAGE_WITH_FIELDS_IN_WRONG_ORDER,
                  HeWikiWarning.WARNING_KTZARMAR_WITHOUT_KTZARMAR_TEMPLATE,
                  HeWikiWarning.WARNING_SEPARATED_HOMONIMIM,
+                 HeWikiWarning.WARNING_TERGUM_WITH_REF,
                  HeWikiWarning.WARNING_PAGE_WITH_INVALID_FIELD]
 
 
