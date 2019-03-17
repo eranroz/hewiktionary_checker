@@ -71,7 +71,7 @@ def main(args):
         all_wiktionary = XmlDump(hewiktionary.LATEST_DUMP).parse()  # open the dump and parse it.
         print('end parsing dump')
         # filter only main namespace
-        all_wiktionary = filter(lambda page: page.ns == '0' and not page.isredirect and page.title.endswith('(שורש)'), all_wiktionary)
+        all_wiktionary = filter(lambda page: page.ns == '0' and not page.isredirect and not page.title.endswith('(שורש)'), all_wiktionary)
         gen = (pywikibot.Page(site, p.title) for p in all_wiktionary)
         gen = pagegenerators.PreloadingGenerator(gen)
 
