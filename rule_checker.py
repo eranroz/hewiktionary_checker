@@ -136,6 +136,9 @@ def check_page(page_title, page_text, warning_to_page_checker, warning_to_item_c
     # if there is no need for detailed description and it is enough to put link to the page, the list will be empty
     warnings = collections.defaultdict(list)
 
+    if has_maintainance_template(page_text):
+        return warnings
+
     for warning, clss in warning_to_page_checker.items():
         if clss.rule_break_found(page_title, '', page_text, PAGE_TEXT_PART.WHOLE_PAGE):
             warnings[warning] = []
@@ -152,6 +155,17 @@ def check_page(page_title, page_text, warning_to_page_checker, warning_to_item_c
             warnings[w].extend(part_warnings[w])
     return warnings
 
+def has_maintainance_template(text):
+    if "{{שהות}}" in text:
+        return True
+    if "{{להשלים" in text:
+        return True
+    if "{{תיקון מילים מארמית" in text:
+        return True
+    if "{{איות שגוי" in text:
+        return True
+    if "{{לשכתוב}}" in text:
+        return True
 
 def main(args):
     local_args = pywikibot.handle_args(args)

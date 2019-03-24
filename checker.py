@@ -40,18 +40,6 @@ class TextBeforeDefChecker(Checker):
 
 class NoTitleChecker(Checker):
     def rule_break_found(self, page_title, text_title, text, text_portion):
-        if "{{שהות}}" in text :
-            return False
-        if "{{להשלים}}" in text:
-            return False
-        if "{{תיקון מילים מארמית" in text:
-            return False
-        if "{{איות שגוי" in text:
-            return False
-        if "{{לשכתוב}}" in text:
-            return False
-        
-
         item_title = hewiktionary.lexeme_title_regex.search(text)
         if not item_title:
             return True
@@ -67,6 +55,8 @@ class NoGremmerBoxChecker(Checker):
         elif re.search(hewiktionary.verb_template_regex, text):
             return []
         elif re.search(hewiktionary.GERSHAIM_REGEX, text_title):
+            return []
+        if hewiktionary.is_abbrevation(page_title, text):
             return []
         else:
             return ['אין טבלת ניתוח דקדוקי %s' % text_title]
@@ -244,6 +234,7 @@ class HomonimimSeperated(Checker):
         return []
 
 
+
 # a ktzarmar is an item that either has no definition or has less than two section (not including "reo gam")
 class KtzarmarWithoutKtzarmarTemplate(Checker):
 
@@ -251,9 +242,9 @@ class KtzarmarWithoutKtzarmarTemplate(Checker):
 
         if re.compile(r'.*{{קצרמר}}.*', re.MULTILINE).search(text) is not None:
             return []
-
-        if re.compile(r'["\']', re.MULTILINE).search(page_title) is not None:
+        if hewiktionary.is_abbrevation(page_title, text):
             return []
+
         # see http://stackoverflow.com/questions/19142042/python-regex-to-get-everything-until-the-first-dot-in-a-string
         # need the "?" so the regex won't be greedy
         # hagdarot = re.compile(u"^(.*?)===[^=]+===\s*\n",re.MULTILINE).search(text)

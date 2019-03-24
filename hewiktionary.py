@@ -125,3 +125,28 @@ def split_parts(page_text):
         title = parts[i]
         part = parts[i+1]
         yield PagePart(title,part)
+
+def is_abbrevation(page_title, text):
+    if '[[קטגוריה:ראשי תיבות - אישים]]' in text:
+        return True
+    if '[[קטגוריה:ראשי תיבות בציונות]]' in text:
+        return True
+    if '[[קטגוריה:ראשי תיבות]]' in text:
+        return True
+    if '[[קטגוריה:קיצורים]]' in text:
+        return True
+    if '[[קטגוריה:ראשי תיבות ביהדות]]' in text:
+        return True
+    if '[[קטגוריה:ראשי תיבות ביידיש]]' in text:
+        return True
+    if '{{קטגוריה|־לוגיה}}' in text:
+        return True
+    if '[[קטגוריה:סופיות' in text:
+        return True
+    if '[[קטגוריה:תחיליות]]' in text:
+        return True
+    if '[[קטגוריה:האלפבית העברי]]' in text:
+        return True
+    if re.compile(r'["\']', re.MULTILINE).search(page_title) is not None:
+        return True
+    return False
